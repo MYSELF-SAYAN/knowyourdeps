@@ -92,6 +92,104 @@ function isVersionInAffectedRange(targetVer: string, affectedList: any[] = []): 
   return false;
 }
 
+function isSemverInRange(ver: string, rangeStr?: string): boolean {
+  if (!rangeStr || !ver || ver === 'latest') return false;
+  const parts = rangeStr.split(',').map((s) => s.trim()).filter(Boolean);
+  for (const part of parts) {
+    const match = part.match(/^([><]=?|=)\s*([0-9a-zA-Z.-]+)/);
+    if (!match) continue;
+    const op = match[1];
+    const target = match[2];
+    const cmp = compareSemver(ver, target);
+    if (op === '>' && !(cmp > 0)) return false;
+    if (op === '>=' && !(cmp >= 0)) return false;
+    if (op === '<' && !(cmp < 0)) return false;
+    if (op === '<=' && !(cmp <= 0)) return false;
+    if (op === '=' && !(cmp === 0)) return false;
+  }
+  return true;
+}
+
+function parseGitHubOwnerRepo(urlOrString?: string): { owner: string; repo: string } | null {
+  if (!urlOrString) return null;
+  const match = urlOrString.match(/github\.com[/:]([^/]+)\/([^/.]+)(?:\.git)?/i);
+  if (match) {
+    return { owner: match[1], repo: match[2].replace(/\.git$/, '') };
+  }
+  return null;
+}
+
+async function getPackageRepository(packageName: string, ecosystem: Ecosystem): Promise<string | undefined> {
+  const cacheKey = `pkg:repo:${ecosystem}:${packageName}`;
+  const cached = getCached<string>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    if (ecosystem === 'npm') {
+      const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`, {
+        headers: { 'User-Agent': 'KnowYourDeps/1.0' },
+        next: { revalidate: 600 },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        const latest = d['dist-tags']?.latest;
+        const verObj = latest && d.versions?.[latest] ? d.versions[latest] : {};
+        let repo = '';
+        if (typeof verObj.repository === 'string') repo = verObj.repository;
+        else if (verObj.repository?.url) repo = verObj.repository.url;
+        else if (typeof d.repository === 'string') repo = d.repository;
+        else if (d.repository?.url) repo = d.repository.url;
+        if (repo) {
+          setCached(cacheKey, repo, 600);
+          return repo;
+        }
+      }
+    } else {
+      const res = await fetch(`https://pypi.org/pypi/${encodeURIComponent(packageName)}/json`, {
+        next: { revalidate: 600 },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        const urls = d.info?.project_urls || {};
+        for (const k of Object.keys(urls)) {
+          if (urls[k] && urls[k].includes('github.com')) {
+            setCached(cacheKey, urls[k], 600);
+            return urls[k];
+          }
+        }
+      }
+    }
+  } catch {
+    // best effort
+  }
+  return undefined;
+}
+
+async function getGitHubSecurityAdvisories(owner: string, repo: string): Promise<any[]> {
+  const cacheKey = `gh:advisories:${owner}:${repo}`;
+  const cached = getCached<any[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/security-advisories`, {
+      headers: {
+        'User-Agent': 'KnowYourDeps-SecurityAudit/1.0',
+        Accept: 'application/vnd.github+json',
+      },
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      setCached(cacheKey, data, 300);
+      return data;
+    }
+  } catch {
+    // best effort
+  }
+  return [];
+}
+
 // Identify parent/core ecosystem packages that share vulnerability histories
 function getParentEcosystemPackages(name: string, ecosystem: Ecosystem): string[] {
   const lower = name.toLowerCase();
@@ -244,6 +342,90 @@ export async function getPackageSecurity(
     console.error('OSV direct query error:', err);
   }
 
+  // 1b. Ingest GitHub Repository Advisories (catches newly minted repository advisories like CVE-2026-133867)
+  try {
+    const repoUrl = await getPackageRepository(packageName, ecosystem);
+    const ghRepo = parseGitHubOwnerRepo(repoUrl);
+    if (ghRepo) {
+      const ghAdvisories = await getGitHubSecurityAdvisories(ghRepo.owner, ghRepo.repo);
+      for (const ghAdv of ghAdvisories) {
+        const ghsaId = ghAdv.ghsa_id;
+        const cveId = ghAdv.cve_id;
+        const primaryId = ghsaId || cveId;
+        if (!primaryId) continue;
+
+        const aliases = Array.from(new Set([ghsaId, cveId].filter(Boolean) as string[]));
+
+        // Find relevant package vulnerability slice
+        const relVulns = Array.isArray(ghAdv.vulnerabilities)
+          ? ghAdv.vulnerabilities.filter((v: any) => {
+              if (!v.package?.name) return true;
+              const vName = v.package.name.toLowerCase();
+              const pName = packageName.toLowerCase();
+              return vName === pName || vName.endsWith(`/${pName}`) || pName.endsWith(`/${vName}`);
+            })
+          : [];
+
+        const vulnItem = relVulns[0] || (ghAdv.vulnerabilities && ghAdv.vulnerabilities[0]);
+        const affectedRange = vulnItem?.vulnerable_version_range || '';
+        const fixedVersion = vulnItem?.patched_versions || vulnItem?.first_patched_version?.identifier;
+
+        const isAffected = affectedRange ? isSemverInRange(version, affectedRange) : false;
+        if (isAffected) {
+          activeIds.add(primaryId);
+          if (ghsaId) activeIds.add(ghsaId);
+          if (cveId) activeIds.add(cveId);
+        }
+
+        // Check if seen
+        const alreadySeen =
+          seenIds.has(primaryId) ||
+          (ghsaId && seenIds.has(ghsaId)) ||
+          (cveId && seenIds.has(cveId));
+
+        if (!alreadySeen) {
+          seenIds.add(primaryId);
+          if (ghsaId) seenIds.add(ghsaId);
+          if (cveId) seenIds.add(cveId);
+
+          const cweList = (ghAdv.cwe_ids || (ghAdv.cwes || []).map((c: any) => c.cwe_id)).filter(Boolean);
+
+          rawAdvisories.push({
+            id: primaryId,
+            summary: ghAdv.summary || `Security Advisory in ${packageName}: ${primaryId}`,
+            details: ghAdv.description,
+            aliases,
+            published: ghAdv.published_at,
+            database_specific: {
+              severity: ghAdv.severity,
+              cwe_ids: cweList,
+            },
+            affected: [
+              {
+                ranges: [
+                  {
+                    type: 'ECOSYSTEM',
+                    events: [
+                      ...(affectedRange ? [{ introduced: '0' }] : []),
+                      ...(fixedVersion ? [{ fixed: fixedVersion }] : []),
+                    ],
+                  },
+                ],
+              },
+            ],
+            _customAffectedRange: affectedRange,
+            _customFixedVersion: fixedVersion,
+            _htmlUrl: ghAdv.html_url,
+            component: packageName,
+            componentType: 'direct',
+          });
+        }
+      }
+    }
+  } catch (ghErr) {
+    console.error('GitHub advisories query error:', ghErr);
+  }
+
   // 2. Parent / Core Ecosystem Packages (e.g., langchain, langchain-core for langchain-postgres)
   const parentPackages = getParentEcosystemPackages(packageName, ecosystem);
   for (const parent of parentPackages) {
@@ -311,18 +493,21 @@ export async function getPackageSecurity(
     const ghsaId = primaryId.startsWith('GHSA-') ? primaryId : aliases.find((a: string) => a.startsWith('GHSA-'));
 
     const rawSeverity = v.database_specific?.severity;
-    const fixedVersion = parseFixedVersion(v.affected);
-    const affectedRange = parseAffectedRange(v.affected);
+    const fixedVersion = v._customFixedVersion || parseFixedVersion(v.affected);
+    const affectedRange = v._customAffectedRange || parseAffectedRange(v.affected);
     const cwe = v.database_specific?.cwe_ids?.[0];
 
     const nvdUrl = cveId ? `https://nvd.nist.gov/vuln/detail/${cveId}` : undefined;
-    const githubUrl = ghsaId ? `https://github.com/advisories/${ghsaId}` : undefined;
+    const githubUrl = v._htmlUrl || (ghsaId ? `https://github.com/advisories/${ghsaId}` : undefined);
     const sourceUrl = githubUrl || nvdUrl || `https://osv.dev/vulnerability/${primaryId}`;
 
     const isDirectAffecting =
       v.componentType === 'direct' &&
       (activeIds.has(primaryId) ||
+        (ghsaId && activeIds.has(ghsaId)) ||
+        (cveId && activeIds.has(cveId)) ||
         aliases.some((a: string) => activeIds.has(a)) ||
+        (v._customAffectedRange ? isSemverInRange(version, v._customAffectedRange) : false) ||
         isVersionInAffectedRange(version, v.affected));
 
     return {
@@ -366,6 +551,9 @@ export async function getPackageSecurity(
         (a) => a !== existing.id
       );
       if (!existing.fixedVersion && adv.fixedVersion) existing.fixedVersion = adv.fixedVersion;
+      if ((!existing.affectedRange || existing.affectedRange === 'All prior versions') && adv.affectedRange) {
+        existing.affectedRange = adv.affectedRange;
+      }
       if (!existing.cwe && adv.cwe) existing.cwe = adv.cwe;
       if (!existing.details && adv.details) existing.details = adv.details;
       if (adv.affectsSelectedVersion) existing.affectsSelectedVersion = true;

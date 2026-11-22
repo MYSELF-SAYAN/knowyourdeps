@@ -28,13 +28,13 @@ export function KeycapButton({
 
   const variantClasses = {
     primary:
-      'bg-[#0033ff] text-white shadow-[0_4px_0_#0026bf] hover:bg-[#002be6] active:translate-y-[3px] active:shadow-[0_1px_0_#0026bf] focus-visible:outline-[#0033ff]',
+      'bg-[#1d53c6] text-white shadow-[0_3px_0_#19409b] hover:bg-[#19409b] active:translate-y-[2px] active:shadow-[0_1px_0_#19409b] focus-visible:outline-[#1d53c6]',
     white:
-      'bg-white text-[#1a1a1a] border border-[#e8e8e8] shadow-[0_3px_0_#d9d9d9] hover:bg-[#fafafa] active:translate-y-[2px] active:shadow-[0_1px_0_#d9d9d9] focus-visible:outline-[#1a1a1a]',
+      'bg-white text-[#0f172a] border border-[#e2e8f0] shadow-[0_2px_0_#cbd5e1] hover:bg-[#eff6ff] hover:border-[#bfdbfe] hover:text-[#1d53c6] active:translate-y-[2px] active:shadow-[0_1px_0_#cbd5e1] focus-visible:outline-[#1d53c6]',
     secondary:
-      'bg-white text-[#1a1a1a] border border-[#e8e8e8] shadow-[0_3px_0_#d9d9d9] hover:bg-[#fafafa] active:translate-y-[2px] active:shadow-[0_1px_0_#d9d9d9] focus-visible:outline-[#1a1a1a]',
+      'bg-white text-[#0f172a] border border-[#e2e8f0] shadow-[0_2px_0_#cbd5e1] hover:bg-[#eff6ff] hover:border-[#bfdbfe] hover:text-[#1d53c6] active:translate-y-[2px] active:shadow-[0_1px_0_#cbd5e1] focus-visible:outline-[#1d53c6]',
     dark:
-      'bg-[#212121] text-white shadow-[0_3px_0_#000000] hover:bg-[#2e2e2e] active:translate-y-[2px] active:shadow-[0_1px_0_#000000] focus-visible:outline-[#0033ff]',
+      'bg-[#0f172a] text-white shadow-[0_3px_0_#020617] hover:bg-[#1e293b] active:translate-y-[2px] active:shadow-[0_1px_0_#020617] focus-visible:outline-[#1d53c6]',
   }[variant];
 
   return (

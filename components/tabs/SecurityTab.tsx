@@ -22,6 +22,9 @@ import {
   Layers,
   GitFork,
   Box,
+  SlidersHorizontal,
+  Filter,
+  X,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { KeycapButton } from '../ui/KeycapButton';
@@ -49,6 +52,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [cveSearchQuery, setCveSearchQuery] = useState('');
   const [expandedAdvisoryId, setExpandedAdvisoryId] = useState<string | null>(null);
+
+  // Single filter popover state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
 
   // Version dropdown list state
   const [availableVersions, setAvailableVersions] = useState<VersionInfo[]>([]);
@@ -86,11 +93,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
     };
   }, [ecosystem, packageName]);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsVersionDropdownOpen(false);
+      }
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(e.target as Node)) {
+        setIsFilterOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -156,8 +166,15 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
   // Direct active vulnerabilities affecting this specific version
   const activeList = allHistoricalList.filter((a) => a.affectsSelectedVersion);
 
-  // Default to showing only selected version's result, unless user selects "all"
-  const versionFilteredList = versionFilter === 'selected' ? activeList : allHistoricalList;
+  // If user has typed a CVE / keyword search query, search across allHistoricalList so
+  // that historical / patched CVEs (like CVE-2026-111181) surface immediately with their status!
+  // If no search query, honor the selected vs all versionFilter.
+  const hasSearchQuery = cveSearchQuery.trim().length > 0;
+  const versionFilteredList = hasSearchQuery
+    ? allHistoricalList
+    : versionFilter === 'selected'
+    ? activeList
+    : allHistoricalList;
 
   // Filter by scope
   const scopedList = versionFilteredList.filter((adv) => {
@@ -173,7 +190,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
     if (severityFilter !== 'all' && adv.severity.toLowerCase() !== severityFilter.toLowerCase()) {
       return false;
     }
-    if (cveSearchQuery.trim()) {
+    if (hasSearchQuery) {
       const q = cveSearchQuery.trim().toLowerCase();
       const matchId = adv.id.toLowerCase().includes(q);
       const matchTitle = adv.title.toLowerCase().includes(q);
@@ -184,20 +201,6 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
     }
     return true;
   });
-
-  // Check if search query matches anything in historical list when in 'selected' view
-  const historicalSearchMatches = cveSearchQuery.trim()
-    ? allHistoricalList.filter((adv) => {
-        const q = cveSearchQuery.trim().toLowerCase();
-        return (
-          adv.id.toLowerCase().includes(q) ||
-          adv.title.toLowerCase().includes(q) ||
-          adv.summary.toLowerCase().includes(q) ||
-          (adv.aliases || []).some((a) => a.toLowerCase().includes(q)) ||
-          (adv.component || '').toLowerCase().includes(q)
-        );
-      }).length
-    : 0;
 
   const filteredVersions = availableVersions.filter((v) =>
     v.version.toLowerCase().includes(versionSearch.toLowerCase())
@@ -220,7 +223,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
             <div
               className={`w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 transition-colors ${
                 loading
-                  ? 'bg-[#f4f4f4] text-[#8c8c8c]'
+                  ? 'bg-[#f4f4f4] text-[#555a64]'
                   : activeList.length > 0
                   ? 'bg-[#feecee] text-[#e5484d]'
                   : 'bg-[#eefcf3] text-[#17a45c]'
@@ -238,7 +241,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h3 className="font-sans font-bold text-[18px] text-[#1a1a1a]">
-                  Vulnerabilities for <span className="font-mono text-[#0033ff]">{packageName}@v{data?.checkedVersion || activeVersion}</span>
+                  Vulnerabilities for <span className="font-mono text-[#1d53c6]">{packageName}@v{data?.checkedVersion || activeVersion}</span>
                 </h3>
 
                 {data && (
@@ -267,29 +270,29 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                 className="flex items-center gap-2 px-3.5 py-2 bg-[#f8f8f8] hover:bg-[#efefef] border border-[#e8e8e8] rounded-[12px] text-[13px] font-semibold text-[#1a1a1a] select-none transition-all duration-150 cursor-pointer active:scale-[0.97]"
                 aria-expanded={isVersionDropdownOpen}
               >
-                <span className="text-[#8c8c8c] font-normal">Version:</span>
-                <span className="font-mono font-bold text-[#0033ff]">v{activeVersion}</span>
-                <ChevronDown className={`h-4 w-4 text-[#8c8c8c] transition-transform duration-200 ${isVersionDropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="text-[#555a64] font-normal">Version:</span>
+                <span className="font-mono font-bold text-[#1d53c6]">v{activeVersion}</span>
+                <ChevronDown className={`h-4 w-4 text-[#555a64] transition-transform duration-200 ${isVersionDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Popover */}
               {isVersionDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#e8e8e8] rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8c8c8c]" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#555a64]" />
                     <input
                       type="text"
                       value={versionSearch}
                       onChange={(e) => setVersionSearch(e.target.value)}
                       placeholder="Search release version..."
-                      className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#0033ff] focus:bg-white transition-colors"
+                      className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
                       autoFocus
                     />
                   </div>
 
                   <div className="max-h-60 overflow-y-auto divide-y divide-[#f4f4f4] scrollbar-thin">
                     {filteredVersions.length === 0 ? (
-                      <div className="p-4 text-center text-[12px] text-[#8c8c8c]">
+                      <div className="p-4 text-center text-[12px] text-[#555a64]">
                         {loadingVersions ? 'Loading versions list...' : 'No versions found.'}
                       </div>
                     ) : (
@@ -302,12 +305,12 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                             onClick={() => handleVersionChange(v.version)}
                             className={`w-full px-3 py-2 text-left flex items-center justify-between text-[12px] transition-colors rounded-[8px] cursor-pointer ${
                               isSelected
-                                ? 'bg-[#f0f3ff] text-[#0033ff] font-bold'
+                                ? 'bg-[#eff6ff] text-[#1d53c6] font-bold'
                                 : 'hover:bg-[#f8f8f8] text-[#1a1a1a]'
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              {isSelected && <Check className="h-3.5 w-3.5 text-[#0033ff]" />}
+                              {isSelected && <Check className="h-3.5 w-3.5 text-[#1d53c6]" />}
                               <span className="font-mono">v{v.version}</span>
                               {v.isLatest && (
                                 <Badge variant="accent" size="sm">
@@ -334,7 +337,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       <button
                         type="button"
                         onClick={() => handleVersionChange(latestVersionObj.version)}
-                        className="w-full text-center py-1.5 text-[11px] font-semibold text-[#0033ff] hover:bg-[#f0f3ff] rounded-[8px] transition-colors flex items-center justify-center gap-1"
+                        className="w-full text-center py-1.5 text-[11px] font-semibold text-[#1d53c6] hover:bg-[#eff6ff] rounded-[8px] transition-colors flex items-center justify-center gap-1"
                       >
                         <Sparkles className="h-3 w-3" />
                         Jump to latest release (v{latestVersionObj.version})
@@ -360,18 +363,18 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
         </div>
 
         {/* Multi-API Sources Attributions */}
-        <div className="mt-4 pt-4 border-t border-[#f0f0f0] flex flex-wrap items-center justify-between text-[11px] text-[#8c8c8c] gap-2">
+        <div className="mt-4 pt-4 border-t border-[#f0f0f0] flex flex-wrap items-center justify-between text-[11px] text-[#555a64] gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span>Aggregated Intelligence:</span>
-            <a href="https://google.github.io/osv.dev/api/" target="_blank" rel="noopener noreferrer" className="text-[#0033ff] hover:underline font-mono">
+            <a href="https://google.github.io/osv.dev/api/" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
               OSV.dev v1
             </a>
             <span>•</span>
-            <a href="https://docs.deps.dev/api/v3/" target="_blank" rel="noopener noreferrer" className="text-[#0033ff] hover:underline font-mono">
+            <a href="https://docs.deps.dev/api/v3/" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
               deps.dev v3
             </a>
             <span>•</span>
-            <a href="https://nvd.nist.gov/developers/vulnerabilities" target="_blank" rel="noopener noreferrer" className="text-[#0033ff] hover:underline font-mono">
+            <a href="https://nvd.nist.gov/developers/vulnerabilities" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
               NVD NIST 2.0
             </a>
           </div>
@@ -386,10 +389,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
         <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] text-[12px] flex flex-col gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="flex items-center justify-between text-[#6e6e6e] font-semibold">
             <span className="flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-[#0033ff]" />
+              <Layers className="h-4 w-4 text-[#1d53c6]" />
               Audited Ecosystem & Supply Chain Components ({data.auditedComponents.length})
             </span>
-            <span className="text-[11px] font-normal text-[#8c8c8c]">
+            <span className="text-[11px] font-normal text-[#555a64]">
               Monorepos and direct dependencies audited in OSV / NVD
             </span>
           </div>
@@ -401,7 +404,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-[#f8f8f8] border border-[#e8e8e8]"
               >
                 <span className="font-mono font-semibold text-[#1a1a1a]">{comp.name}</span>
-                <span className="text-[10px] text-[#8c8c8c]">
+                <span className="text-[10px] text-[#555a64]">
                   ({comp.type === 'direct' ? 'Direct' : comp.type === 'parent-ecosystem' ? 'Core Monorepo' : 'Dependency'})
                 </span>
                 {comp.count > 0 && (
@@ -415,21 +418,21 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
         </div>
       )}
 
-      {/* Control Bar: Version Filter Segment + Scope Filter + Live CVE/Keyword Search */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white border border-[#e8e8e8] p-3 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-        {/* Version Filter Segment: Default to Selected Version vs All Past Vulnerabilities */}
+      {/* De-cluttered Control Bar: 2-Segment Switcher + Single Filter Button + Live Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-[#e8e8e8] p-3 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+        {/* 2-Segment Switcher with Clearer Wording */}
         <div className="flex items-center gap-1.5 p-1 bg-[#f4f4f4] rounded-[12px] border border-[#e8e8e8] shrink-0">
           <button
             type="button"
             onClick={() => setVersionFilter('selected')}
-            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
               versionFilter === 'selected'
                 ? 'bg-white text-[#1a1a1a] shadow-xs'
                 : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${activeList.length > 0 ? 'bg-[#e5484d]' : 'bg-[#17a45c]'}`} />
-            <span>Affects v{activeVersion}</span>
+            <span>Current Release (v{activeVersion})</span>
             <span
               className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
                 activeList.length > 0 ? 'bg-[#feecee] text-[#e5484d]' : 'bg-[#eefcf3] text-[#17a45c]'
@@ -442,94 +445,180 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
           <button
             type="button"
             onClick={() => setVersionFilter('all')}
-            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 select-none ${
+            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
               versionFilter === 'all'
                 ? 'bg-white text-[#1a1a1a] shadow-xs'
                 : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
             }`}
           >
-            <span>All Past Vulnerabilities</span>
+            <span>Full Security History</span>
             <span className="text-[11px] px-1.5 py-0.2 rounded-full font-mono font-medium bg-[#e8e8e8] text-[#555]">
               {allHistoricalList.length}
             </span>
           </button>
         </div>
 
-        {/* Scope Switcher Tabs */}
-        <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-[10px] overflow-x-auto">
-          <button
-            onClick={() => setScope('all')}
-            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              scope === 'all'
-                ? 'bg-white text-[#1a1a1a] shadow-xs'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
-            }`}
-          >
-            All ({versionFilteredList.length})
-          </button>
-          <button
-            onClick={() => setScope('direct')}
-            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              scope === 'direct'
-                ? 'bg-white text-[#1a1a1a] shadow-xs'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
-            }`}
-          >
-            Direct ({directCount})
-          </button>
-          {parentCount > 0 && (
-            <button
-              onClick={() => setScope('parent-ecosystem')}
-              className={`px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                scope === 'parent-ecosystem'
-                  ? 'bg-white text-[#1a1a1a] shadow-xs'
-                  : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
-              }`}
-            >
-              Core Monorepo ({parentCount})
-            </button>
-          )}
-          {depCount > 0 && (
-            <button
-              onClick={() => setScope('dependency')}
-              className={`px-3 py-1.5 rounded-[8px] text-[12px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                scope === 'dependency'
-                  ? 'bg-white text-[#1a1a1a] shadow-xs'
-                  : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
-              }`}
-            >
-              Dependencies ({depCount})
-            </button>
-          )}
-        </div>
-
-        {/* Live Search CVE / Keyword */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#8c8c8c]" />
-          <input
-            type="text"
-            value={cveSearchQuery}
-            onChange={(e) => setCveSearchQuery(e.target.value)}
-            placeholder="Search CVE ID (e.g. CVE-2024-28088)..."
-            className="w-full pl-9 pr-7 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#0033ff] focus:bg-white transition-colors"
-          />
-          {cveSearchQuery && (
+        {/* Right Side: Single Filter Popover Button + Search */}
+        <div className="flex items-center gap-2 flex-1 sm:justify-end">
+          {/* Single Filter Button */}
+          <div className="relative" ref={filterDropdownRef}>
             <button
               type="button"
-              onClick={() => setCveSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-[#8c8c8c] hover:text-[#1a1a1a] cursor-pointer"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border text-[12px] font-semibold transition-all cursor-pointer select-none active:scale-[0.98] ${
+                isFilterOpen || severityFilter !== 'all' || scope !== 'all'
+                  ? 'bg-[#eff6ff] border-[#bfdbfe] text-[#1d53c6]'
+                  : 'bg-[#f8fafc] border-[#e2e8f0] text-[#0f172a] hover:bg-[#f1f5f9]'
+              }`}
             >
-              ✕
+              <SlidersHorizontal className="h-3.5 w-3.5 text-[#1d53c6]" />
+              <span>Filter</span>
+              {(severityFilter !== 'all' || scope !== 'all') && (
+                <span className="h-4 w-4 rounded-full bg-[#1d53c6] text-white text-[10px] font-bold flex items-center justify-center">
+                  {(severityFilter !== 'all' ? 1 : 0) + (scope !== 'all' ? 1 : 0)}
+                </span>
+              )}
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-[#64748b] transition-transform duration-200 ${
+                  isFilterOpen ? 'rotate-180' : ''
+                }`}
+              />
             </button>
-          )}
+
+            {/* Filter Dropdown Popover */}
+            {isFilterOpen && (
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#e8e8e8] rounded-[18px] shadow-xl z-50 p-3.5 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+                {/* Severity Selection */}
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] block mb-2">
+                    Severity Level
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['all', 'critical', 'high', 'medium', 'low'].map((sev) => (
+                      <button
+                        key={sev}
+                        type="button"
+                        onClick={() => setSeverityFilter(sev)}
+                        className={`px-2.5 py-1 text-[11px] font-semibold rounded-[6px] transition-colors cursor-pointer uppercase ${
+                          severityFilter === sev
+                            ? 'bg-[#1d53c6] text-white'
+                            : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]'
+                        }`}
+                      >
+                        {sev}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Component Scope Selection */}
+                <div className="pt-2 border-t border-[#f0f0f0]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] block mb-2">
+                    Component Scope
+                  </span>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setScope('all')}
+                      className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
+                        scope === 'all'
+                          ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
+                          : 'text-[#64748b] hover:bg-[#f8fafc]'
+                      }`}
+                    >
+                      <span>All Components</span>
+                      <span className="font-mono text-[11px]">({versionFilteredList.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScope('direct')}
+                      className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
+                        scope === 'direct'
+                          ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
+                          : 'text-[#64748b] hover:bg-[#f8fafc]'
+                      }`}
+                    >
+                      <span>Direct Component Only</span>
+                      <span className="font-mono text-[11px]">({directCount})</span>
+                    </button>
+                    {parentCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setScope('parent-ecosystem')}
+                        className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
+                          scope === 'parent-ecosystem'
+                            ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
+                            : 'text-[#64748b] hover:bg-[#f8fafc]'
+                        }`}
+                      >
+                        <span>Core Monorepo</span>
+                        <span className="font-mono text-[11px]">({parentCount})</span>
+                      </button>
+                    )}
+                    {depCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setScope('dependency')}
+                        className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
+                          scope === 'dependency'
+                            ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
+                            : 'text-[#64748b] hover:bg-[#f8fafc]'
+                        }`}
+                      >
+                        <span>Dependencies</span>
+                        <span className="font-mono text-[11px]">({depCount})</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reset Filters Option */}
+                {(severityFilter !== 'all' || scope !== 'all') && (
+                  <div className="pt-2 border-t border-[#f0f0f0] flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSeverityFilter('all');
+                        setScope('all');
+                      }}
+                      className="text-[11px] font-semibold text-[#1d53c6] hover:underline cursor-pointer"
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Live Search CVE / Keyword */}
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" />
+            <input
+              type="text"
+              value={cveSearchQuery}
+              onChange={(e) => setCveSearchQuery(e.target.value)}
+              placeholder="Search CVE ID..."
+              className="w-full pl-9 pr-7 py-1.5 text-[12px] bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+            />
+            {cveSearchQuery && (
+              <button
+                type="button"
+                onClick={() => setCveSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-[#64748b] hover:text-[#0f172a] cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Historical View Banner Indicator */}
       {versionFilter === 'all' && (
-        <div className="px-4 py-3 bg-[#f8f9ff] border border-[#d6e0ff] rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#334155] animate-in fade-in duration-200">
+        <div className="px-4 py-3 bg-[#f8f9ff] border border-[#bfdbfe] rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#334155] animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
-            <Info className="h-4 w-4 text-[#0033ff] shrink-0" />
+            <Info className="h-4 w-4 text-[#1d53c6] shrink-0" />
             <span>
               Viewing complete vulnerability history across all versions ({allHistoricalList.length} total records).{' '}
               <strong className="text-[#e5484d]">{activeList.length} active</strong> in v{activeVersion},{' '}
@@ -539,18 +628,36 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
           <button
             type="button"
             onClick={() => setVersionFilter('selected')}
-            className="text-[#0033ff] hover:underline font-semibold cursor-pointer shrink-0"
+            className="text-[#1d53c6] hover:underline font-semibold cursor-pointer shrink-0"
           >
             Show Only Active for v{activeVersion} ({activeList.length}) →
           </button>
         </div>
       )}
 
-      {/* Loading Skeleton */}
-      {loading && !data && (
-        <div className="space-y-4">
-          <div className="h-28 bg-[#f4f4f4] rounded-[16px] animate-pulse" />
-          <div className="h-28 bg-[#f4f4f4] rounded-[16px] animate-pulse" />
+      {/* Loading Skeleton: High Fidelity Advisory Cards */}
+      {loading && (
+        <div className="space-y-4 animate-in fade-in duration-150">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 animate-pulse"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-20 bg-[#f0f0f0] rounded-[6px]" />
+                  <div className="h-6 w-28 bg-[#f0f0f0] rounded-[6px]" />
+                </div>
+                <div className="h-5 w-16 bg-[#f0f0f0] rounded" />
+              </div>
+              <div className="h-4 w-3/4 bg-[#f0f0f0] rounded" />
+              <div className="h-3.5 w-1/2 bg-[#f0f0f0] rounded" />
+              <div className="pt-2 border-t border-[#f0f0f0] flex items-center gap-3">
+                <div className="h-3 w-32 bg-[#f0f0f0] rounded" />
+                <div className="h-3 w-28 bg-[#f0f0f0] rounded" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -565,8 +672,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
         </div>
       )}
 
-      {/* Clean Release View when no active CVEs affect selected version */}
-      {data && versionFilter === 'selected' && activeList.length === 0 && !loading && (
+      {/* Clean Release View when no active CVEs affect selected version and NOT searching */}
+      {data && versionFilter === 'selected' && activeList.length === 0 && !hasSearchQuery && !loading && (
         <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="w-14 h-14 rounded-full bg-[#eefcf3] text-[#17a45c] flex items-center justify-center mb-3">
             <ShieldCheck className="h-7 w-7" />
@@ -590,54 +697,80 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               >
                 Show All {allHistoricalList.length} Past Vulnerabilities
               </KeycapButton>
-              <span className="text-[12px] text-[#8c8c8c]">
+              <span className="text-[12px] text-[#555a64]">
                 ({allHistoricalList.length} historical CVEs patched in this or prior releases)
               </span>
-            </div>
-          )}
-
-          {/* If user searched for a CVE that exists in historical records */}
-          {cveSearchQuery && historicalSearchMatches > 0 && (
-            <div className="mt-4 p-3 bg-[#f0f3ff] border border-[#c7d3ff] rounded-[12px] text-[12px] text-[#0033ff] flex items-center gap-2">
-              <Info className="h-4 w-4 shrink-0" />
-              <span>
-                Found <strong>{historicalSearchMatches}</strong> past advisory matching &ldquo;{cveSearchQuery}&rdquo; in package history.
-              </span>
-              <button
-                type="button"
-                onClick={() => setVersionFilter('all')}
-                className="underline font-bold hover:text-[#0022aa] cursor-pointer ml-1"
-              >
-                View in All Past Vulnerabilities →
-              </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Advisory Cards List */}
-      {data && filteredAdvisories.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {/* Severity Filters */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-              {['all', 'critical', 'high', 'medium', 'low'].map((sev) => (
-                <button
-                  key={sev}
-                  onClick={() => setSeverityFilter(sev)}
-                  className={`px-3 py-1 rounded-[8px] text-[12px] font-medium transition-colors cursor-pointer select-none ${
-                    severityFilter === sev
-                      ? 'bg-[#1a1a1a] text-white shadow-xs'
-                      : 'bg-[#f4f4f4] text-[#6e6e6e] hover:bg-[#e8e8e8]'
-                  }`}
-                >
-                  {sev.toUpperCase()}
-                </button>
-              ))}
-            </div>
-            <span className="text-[12px] text-[#8c8c8c]">
-              Showing {filteredAdvisories.length} of {scopedList.length}
+      {/* Active Search Result Notification Banner */}
+      {!loading && hasSearchQuery && filteredAdvisories.length > 0 && (
+        <div className="px-4 py-2.5 bg-[#eff6ff] border border-[#bfdbfe] rounded-[12px] flex items-center justify-between text-[12px] text-[#1d53c6]">
+          <div className="flex items-center gap-2">
+            <Search className="h-3.5 w-3.5" />
+            <span>
+              Showing <strong>{filteredAdvisories.length}</strong> {filteredAdvisories.length === 1 ? 'record' : 'records'} matching &ldquo;{cveSearchQuery}&rdquo; across package history
             </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCveSearchQuery('')}
+            className="underline hover:text-[#19409b] font-semibold cursor-pointer"
+          >
+            Clear Search
+          </button>
+        </div>
+      )}
+
+      {/* Empty Search Result State */}
+      {!loading && hasSearchQuery && filteredAdvisories.length === 0 && (
+        <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+          <div className="w-12 h-12 rounded-full bg-[#f4f4f4] text-[#555a64] flex items-center justify-center mb-3">
+            <Search className="h-6 w-6" />
+          </div>
+          <h4 className="font-sans font-bold text-[16px] text-[#1a1a1a]">
+            No advisories matching &ldquo;{cveSearchQuery}&rdquo;
+          </h4>
+          <p className="text-[13px] text-[#6e6e6e] max-w-[420px] mt-1.5 leading-relaxed">
+            Neither active nor historical security records for <strong className="font-mono text-[#1a1a1a]">{packageName}</strong> match this identifier or keyword.
+          </p>
+          <div className="mt-4">
+            <KeycapButton
+              variant="secondary"
+              size="sm"
+              onClick={() => setCveSearchQuery('')}
+            >
+              Clear Search Filter
+            </KeycapButton>
+          </div>
+        </div>
+      )}
+
+      {/* Advisory Cards List */}
+      {!loading && data && filteredAdvisories.length > 0 && (
+        <div className="flex flex-col gap-4">
+          {/* Advisories Count & Active Filters Indicator */}
+          <div className="flex items-center justify-between text-[12.5px] text-[#64748b] px-1">
+            <span>
+              Showing <strong className="text-[#0f172a]">{filteredAdvisories.length}</strong> of {scopedList.length} security advisories
+              {severityFilter !== 'all' && (
+                <span className="ml-1 text-[#1d53c6] font-semibold">({severityFilter.toUpperCase()} only)</span>
+              )}
+            </span>
+            {(severityFilter !== 'all' || scope !== 'all') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSeverityFilter('all');
+                  setScope('all');
+                }}
+                className="text-[#1d53c6] hover:underline font-semibold cursor-pointer"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
 
           {/* Cards */}
@@ -655,7 +788,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               return (
                 <div
                   key={`${advisory.id}-${advisory.component}`}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#c7d3ff] rounded-[18px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-150"
+                  className="bg-white border border-[#e8e8e8] hover:border-[#bfdbfe] rounded-[18px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-150"
                 >
                   {/* Top Bar with ID, Status Badge, Component Tag, Severity, and External Links */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#f0f0f0]">
@@ -680,14 +813,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       </span>
 
                       {advisory.aliases?.map((alias) => (
-                        <span key={alias} className="font-mono text-[11px] text-[#8c8c8c] bg-[#f4f4f4] px-1.5 py-0.5 rounded">
+                        <span key={alias} className="font-mono text-[11px] text-[#555a64] bg-[#f4f4f4] px-1.5 py-0.5 rounded">
                           {alias}
                         </span>
                       ))}
 
                       {/* Component Origin Badge */}
                       {advisory.component && advisory.component !== packageName && (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#f0f3ff] text-[#0033ff] border border-[#d6e0ff]">
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#eff6ff] text-[#1d53c6] border border-[#bfdbfe]">
                           {advisory.componentType === 'parent-ecosystem' ? 'Core Monorepo: ' : 'Dependency: '}
                           <code className="font-mono font-bold">{advisory.component}</code>
                         </span>
@@ -701,7 +834,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                           href={nvdUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#0033ff] hover:underline flex items-center gap-0.5 font-medium"
+                          className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
                           title="View on National Vulnerability Database (NVD NIST)"
                         >
                           NVD Record <ArrowUpRight className="h-3 w-3" />
@@ -712,7 +845,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                           href={githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#0033ff] hover:underline flex items-center gap-0.5 font-medium"
+                          className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
                           title="View on GitHub Advisory Database"
                         >
                           GitHub Advisory <ArrowUpRight className="h-3 w-3" />
@@ -722,7 +855,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         href={osvUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#0033ff] hover:underline flex items-center gap-0.5 font-medium"
+                        className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
                         title="View on OSV.dev (Open Source Vulnerabilities)"
                       >
                         OSV Report <ArrowUpRight className="h-3 w-3" />
@@ -745,17 +878,17 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                   {/* Details grid: Affected version range, fixed version, published date */}
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#fbfbfb] p-3.5 rounded-[12px] border border-[#f0f0f0] text-[12px]">
                     <div>
-                      <span className="text-[#8c8c8c] block font-medium">Affected Version Range:</span>
+                      <span className="text-[#555a64] block font-medium">Affected Version Range:</span>
                       <span className="font-mono text-[#e5484d] font-semibold">{advisory.affectedRange || 'Unspecified'}</span>
                     </div>
                     <div>
-                      <span className="text-[#8c8c8c] block font-medium">Patched / Fixed Version:</span>
+                      <span className="text-[#555a64] block font-medium">Patched / Fixed Version:</span>
                       <span className="font-mono text-[#17a45c] font-semibold">
                         {advisory.fixedVersion ? `>= ${advisory.fixedVersion}` : 'Consult advisory notes'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#8c8c8c] block font-medium">Published Date:</span>
+                      <span className="text-[#555a64] block font-medium">Published Date:</span>
                       <span className="text-[#1a1a1a]">
                         {advisory.publishedAt ? new Date(advisory.publishedAt).toLocaleDateString() : 'N/A'}
                       </span>
@@ -787,7 +920,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       <button
                         type="button"
                         onClick={() => setExpandedAdvisoryId(isExpanded ? null : advisory.id)}
-                        className="text-[#0033ff] hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
+                        className="text-[#1d53c6] hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
                       >
                         {isExpanded ? 'Hide technical write-up' : 'View disclosure write-up'}
                       </button>

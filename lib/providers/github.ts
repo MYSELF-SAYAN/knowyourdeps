@@ -59,7 +59,7 @@ export async function getGitHubStats(repoUrl?: string): Promise<GitHubStats | nu
   try {
     const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
       headers: {
-        'User-Agent': 'DepsDive-App/1.0',
+        'User-Agent': 'KnowYourDeps-App/1.0',
         Accept: 'application/vnd.github.v3+json',
       },
       next: { revalidate: 3600 },

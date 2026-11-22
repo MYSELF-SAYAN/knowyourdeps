@@ -23,15 +23,15 @@ export function Badge({ variant = 'neutral', size = 'md', children, className = 
   const sizeClass = size === 'sm' ? 'px-2 py-0.5 text-[11px] rounded-[6px]' : 'px-2.5 py-1 text-[12px] rounded-[8px]';
 
   const variantClassMap: Record<BadgeVariant, string> = {
-    safe: 'bg-[#ebefff] text-[#0033ff] border border-[#c7d3ff]',
-    success: 'bg-[#eefcf3] text-[#17a45c] border border-[#bcf2ce]',
-    vulnerable: 'bg-[#feecee] text-[#e5484d] border border-[#fcccd1]',
-    danger: 'bg-[#feecee] text-[#e5484d] border border-[#fcccd1]',
-    warning: 'bg-[#fff4e8] text-[#bf5b00] border border-[#ffe2c7]',
-    neutral: 'bg-[#f4f4f4] text-[#6e6e6e] border border-[#e8e8e8]',
-    default: 'bg-[#f4f4f4] text-[#6e6e6e] border border-[#e8e8e8]',
-    accent: 'bg-[#0033ff] text-white',
-    primary: 'bg-[#0033ff] text-white',
+    safe: 'bg-[#eff6ff] text-[#19409b] border border-[#bfdbfe]',
+    success: 'bg-[#eefcf3] text-[#0d7a42] border border-[#bcf2ce]',
+    vulnerable: 'bg-[#feecee] text-[#b82429] border border-[#fcccd1]',
+    danger: 'bg-[#feecee] text-[#b82429] border border-[#fcccd1]',
+    warning: 'bg-[#fff4e8] text-[#994800] border border-[#ffe2c7]',
+    neutral: 'bg-[#f8fafc] text-[#475569] border border-[#e2e8f0]',
+    default: 'bg-[#f8fafc] text-[#475569] border border-[#e2e8f0]',
+    accent: 'bg-[#1d53c6] text-white',
+    primary: 'bg-[#1d53c6] text-white',
     tangerine: 'bg-[#ff7a00] text-white',
   };
 

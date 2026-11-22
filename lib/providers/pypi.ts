@@ -68,7 +68,8 @@ export async function getPyPIPackage(name: string): Promise<PackageOverview | nu
 
     let weeklyDownloads = 0;
     try {
-      const statsRes = await fetch(`${PYPI_STATS}/packages/${encodeURIComponent(name)}/overall`);
+      const normalizedStatsName = name.trim().toLowerCase();
+      const statsRes = await fetch(`${PYPI_STATS}/packages/${encodeURIComponent(normalizedStatsName)}/overall`);
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         const rows = (statsData.data || [])
@@ -185,17 +186,18 @@ export async function getPyPIVersions(name: string): Promise<VersionInfo[]> {
 }
 
 export async function getPyPIAnalytics(name: string, period = '30d'): Promise<AnalyticsData> {
-  const cacheKey = `pypi:analytics:${name}:${period}`;
+  const normalizedName = name.trim().toLowerCase();
+  const cacheKey = `pypi:analytics:${normalizedName}:${period}`;
   const cached = getCached<AnalyticsData>(cacheKey);
   if (cached) return cached;
 
   let days = 30;
   if (period === '7d') days = 7;
   else if (period === '90d') days = 90;
-  else if (period === '365d') days = 180; // pypistats provides up to 180 days
+  else if (period === '365d' || period === 'all') days = 180; // pypistats provides up to 180 days
 
   try {
-    const res = await fetch(`${PYPI_STATS}/packages/${encodeURIComponent(name)}/overall`);
+    const res = await fetch(`${PYPI_STATS}/packages/${encodeURIComponent(normalizedName)}/overall`);
     if (!res.ok) throw new Error('PyPI stats failed');
     const data = await res.json();
 
@@ -252,6 +254,29 @@ export async function getPyPIAnalytics(name: string, period = '30d'): Promise<An
     setCached(cacheKey, result, 600);
     return result;
   } catch {
+    // Fallback to recent endpoint if overall endpoint failed or timed out
+    try {
+      const recentRes = await fetch(`${PYPI_STATS}/packages/${encodeURIComponent(normalizedName)}/recent`);
+      if (recentRes.ok) {
+        const recentJson = await recentRes.json();
+        const recentData = recentJson.data || {};
+        const lastMonth = recentData.last_month || 0;
+        const dailyAvg = Math.round(lastMonth / 30);
+        return {
+          ecosystem: 'pypi',
+          packageName: name,
+          period,
+          totalDownloads: lastMonth,
+          dailyAverage: dailyAvg,
+          history: [],
+          source: 'pypistats recent API',
+          note: 'Daily historical breakdown is limited; showing recent aggregates.',
+        };
+      }
+    } catch {
+      // ignore
+    }
+
     return {
       ecosystem: 'pypi',
       packageName: name,

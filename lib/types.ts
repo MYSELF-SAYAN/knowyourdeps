@@ -4,6 +4,7 @@ export type TabType =
   | 'overview'
   | 'history'
   | 'security'
+  | 'ecosystem'
   | 'dependencies'
   | 'alternatives'
   | 'health'
@@ -200,4 +201,19 @@ export interface ReadmeData {
   contentType: string; // e.g. "text/markdown", "text/x-rst", "text/plain"
   source: string;
   error?: string;
+}
+
+export interface ComparisonTarget {
+  ecosystem: Ecosystem;
+  name: string;
+  version?: string;
+}
+
+export interface ComparisonResultItem {
+  overview: PackageOverview;
+  analytics?: AnalyticsData;
+  security: SecurityData;
+  deps: DependencyData;
+  selectedVersion: string;
+  versions?: VersionInfo[];
 }

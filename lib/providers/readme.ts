@@ -25,7 +25,7 @@ export async function getPackageReadme(
         : `${PYPI_BASE}/${encodeURIComponent(name)}/json`;
 
       const res = await fetch(url, {
-        headers: { 'User-Agent': 'DepsDive-App/1.0' },
+        headers: { 'User-Agent': 'KnowYourDeps-App/1.0' },
         next: { revalidate: 3600 },
       });
 
@@ -81,7 +81,7 @@ export async function getPackageReadme(
       for (const cdnUrl of cdnUrls) {
         try {
           const cdnRes = await fetch(cdnUrl, {
-            headers: { 'User-Agent': 'DepsDive-App/1.0' },
+            headers: { 'User-Agent': 'KnowYourDeps-App/1.0' },
             next: { revalidate: 86400 }, // CDN immutable cache
           });
           if (cdnRes.ok) {
@@ -107,7 +107,7 @@ export async function getPackageReadme(
 
     // 2. Fetch from main npm registry document
     const res = await fetch(`${NPM_REGISTRY}/${encodeURIComponent(name)}`, {
-      headers: { 'User-Agent': 'DepsDive-App/1.0' },
+      headers: { 'User-Agent': 'KnowYourDeps-App/1.0' },
       next: { revalidate: 3600 },
     });
 

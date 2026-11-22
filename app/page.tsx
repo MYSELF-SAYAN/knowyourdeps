@@ -2,7 +2,7 @@
 
 import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Ecosystem, TabType, PackageOverview } from '@/lib/types';
+import { Ecosystem, TabType, PackageOverview, ComparisonTarget } from '@/lib/types';
 import { Navbar } from '@/components/Navbar';
 import { SearchBar } from '@/components/SearchBar';
 import { PackageSidebar } from '@/components/PackageSidebar';
@@ -10,8 +10,7 @@ import { TabNavigation } from '@/components/TabNavigation';
 import { OverviewTab } from '@/components/tabs/OverviewTab';
 import { HistoryTab } from '@/components/tabs/HistoryTab';
 import { SecurityTab } from '@/components/tabs/SecurityTab';
-import { DependenciesTab } from '@/components/tabs/DependenciesTab';
-import { AlternativesTab } from '@/components/tabs/AlternativesTab';
+import { EcosystemTab } from '@/components/tabs/EcosystemTab';
 import { HealthTab } from '@/components/tabs/HealthTab';
 import { ComparisonModal } from '@/components/ComparisonModal';
 import { KeycapButton } from '@/components/ui/KeycapButton';
@@ -41,7 +40,7 @@ function DashboardContent() {
 
   // Compare modal state
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-  const [compareTargets, setCompareTargets] = useState<{ ecosystem: Ecosystem; name: string }[]>([]);
+  const [compareTargets, setCompareTargets] = useState<ComparisonTarget[]>([]);
 
   // Fetch package overview when ecosystem or package changes
   useEffect(() => {
@@ -78,6 +77,8 @@ function DashboardContent() {
     fetchPackage();
   }, [ecosystem, packageName]);
 
+  const activeVersion = versionParam || packageData?.latestVersion || 'latest';
+
   const handleSelectTab = (tab: TabType) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('type', tab);
@@ -92,7 +93,7 @@ function DashboardContent() {
 
   const openCompareModalWith = (targetPackage: string) => {
     setCompareTargets([
-      { ecosystem, name: packageName },
+      { ecosystem, name: packageName, version: activeVersion !== 'latest' ? activeVersion : undefined },
       { ecosystem, name: targetPackage },
     ]);
     setIsCompareOpen(true);
@@ -100,7 +101,7 @@ function DashboardContent() {
 
   const openCompareModalDirect = () => {
     if (packageName) {
-      setCompareTargets([{ ecosystem, name: packageName }]);
+      setCompareTargets([{ ecosystem, name: packageName, version: activeVersion !== 'latest' ? activeVersion : undefined }]);
     } else {
       setCompareTargets([
         { ecosystem: 'npm', name: 'axios' },
@@ -110,8 +111,6 @@ function DashboardContent() {
     setIsCompareOpen(true);
   };
 
-  const activeVersion = versionParam || packageData?.latestVersion || 'latest';
-
   const POPULAR_PACKAGES: Record<Ecosystem, string[]> = {
     npm: ['axios', 'express', 'react', 'zod', 'next', 'fastify', 'lodash', 'tailwindcss'],
     pypi: ['requests', 'fastapi', 'flask', 'pydantic', 'httpx', 'pandas', 'numpy', 'pytest'],
@@ -119,18 +118,25 @@ function DashboardContent() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#fcfcfc] text-[#1a1a1a] ${
+      className={`min-h-screen flex flex-col bg-[#f8fafc] text-[#0f172a] relative ${
         packageName ? 'lg:h-screen lg:overflow-hidden' : ''
       }`}
     >
+      {/* Smokey Sky Atmosphere Aura (tasteskill.dev design system) */}
+      {!packageName && (
+        <div className="sky-half-screen-bg">
+          <div className="sky-clouds-overlay" />
+        </div>
+      )}
+
       {/* Centered Floating Animated Navbar */}
-      <header className="sticky top-2.5 z-40 w-full flex justify-center px-4 pointer-events-none">
+      <header className="sticky top-3.5 z-40 w-full flex justify-center px-4 pointer-events-none">
         <Navbar onOpenCompare={openCompareModalDirect} />
       </header>
 
-      {/* When package view is active: Pinned Search Bar (stays completely still) */}
+      {/* When package view is active: Pinned Search Bar with proper breathing space from floating navbar */}
       {packageName && (
-        <div className="shrink-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-2 z-20">
+        <div className="shrink-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-3 z-20">
           <SearchBar inputRef={searchInputRef} compact />
         </div>
       )}
@@ -138,13 +144,73 @@ function DashboardContent() {
       {/* Package View Mode: Fixed Workspace (Sidebox & Tabs stay still, only contents scroll) */}
       {packageName ? (
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 min-h-0 lg:overflow-hidden flex flex-col">
-          {/* Loading state */}
+          {/* Loading state: High-Fidelity Skeleton Package Workspace */}
           {loading && !packageData && (
-            <div className="flex flex-col lg:flex-row items-start gap-6 h-full py-4">
-              <div className="w-full lg:w-[300px] h-96 bg-white border border-[#e8e8e8] rounded-[20px] animate-pulse p-6" />
-              <div className="flex-1 w-full space-y-4">
-                <div className="h-12 bg-white border border-[#e8e8e8] rounded-[14px] animate-pulse" />
-                <div className="h-96 bg-white border border-[#e8e8e8] rounded-[20px] animate-pulse" />
+            <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-start gap-6 lg:overflow-hidden py-1 animate-in fade-in duration-150">
+              {/* Left Column: Sidebar Skeleton */}
+              <div className="w-full lg:w-[300px] shrink-0 bg-white border border-[#e8e8e8] rounded-[20px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-4">
+                {/* Badges placeholder */}
+                <div className="flex items-center gap-1.5">
+                  <div className="h-5 w-12 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-5 w-16 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-5 w-14 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
+                </div>
+                {/* Name & description */}
+                <div>
+                  <div className="h-8 w-44 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="mt-2.5 space-y-1.5">
+                    <div className="h-3.5 w-full rounded bg-[#f0f0f0] animate-pulse" />
+                    <div className="h-3.5 w-5/6 rounded bg-[#f0f0f0] animate-pulse" />
+                    <div className="h-3.5 w-3/4 rounded bg-[#f0f0f0] animate-pulse" />
+                  </div>
+                </div>
+                {/* Security pill skeleton */}
+                <div className="h-8 rounded-[10px] bg-[#f0f0f0] animate-pulse" />
+                {/* Install box skeleton */}
+                <div className="h-10 rounded-[12px] bg-[#f0f0f0] animate-pulse" />
+                {/* Links */}
+                <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                </div>
+              </div>
+
+              {/* Right Column: Tab Navigation & Content Skeleton */}
+              <div className="flex-1 min-w-0 w-full flex flex-col lg:h-full lg:overflow-hidden">
+                {/* Pinned Tab bar skeleton */}
+                <div className="shrink-0 flex items-center gap-2 pb-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-9 w-24 rounded-[12px] bg-white border border-[#e8e8e8] animate-pulse"
+                    />
+                  ))}
+                </div>
+
+                {/* Content body skeleton */}
+                <div className="flex-1 min-h-0 space-y-4 pt-1">
+                  {/* 4 Stat Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-24 bg-white border border-[#e8e8e8] rounded-[18px] p-4 animate-pulse flex flex-col justify-between"
+                      >
+                        <div className="h-3 w-16 bg-[#f0f0f0] rounded" />
+                        <div className="h-7 w-24 bg-[#f0f0f0] rounded" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Main section card shimmer */}
+                  <div className="h-[420px] bg-white border border-[#e8e8e8] rounded-[20px] p-6 animate-pulse flex flex-col gap-4">
+                    <div className="h-6 w-48 bg-[#f0f0f0] rounded-[8px]" />
+                    <div className="h-4 w-full bg-[#f0f0f0] rounded" />
+                    <div className="h-4 w-5/6 bg-[#f0f0f0] rounded" />
+                    <div className="flex-1 bg-[#fafafa] rounded-[14px] border border-[#f0f0f0]" />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -187,6 +253,7 @@ function DashboardContent() {
               <div className="w-full lg:w-[300px] shrink-0 lg:h-full lg:overflow-y-auto scrollbar-none pb-4">
                 <PackageSidebar
                   pkg={packageData}
+                  activeVersion={activeVersion}
                   onOpenCompare={openCompareModalDirect}
                 />
               </div>
@@ -227,19 +294,13 @@ function DashboardContent() {
                       />
                     )}
 
-                    {currentTab === 'dependencies' && (
-                      <DependenciesTab
+                    {(currentTab === 'ecosystem' || currentTab === 'dependencies' || currentTab === 'alternatives') && (
+                      <EcosystemTab
                         ecosystem={ecosystem}
                         packageName={packageData.name}
                         version={activeVersion}
-                      />
-                    )}
-
-                    {currentTab === 'alternatives' && (
-                      <AlternativesTab
-                        ecosystem={ecosystem}
-                        packageName={packageData.name}
                         onCompareWith={openCompareModalWith}
+                        initialSubTab={currentTab === 'alternatives' ? 'alternatives' : 'dependencies'}
                       />
                     )}
 
@@ -253,64 +314,66 @@ function DashboardContent() {
           )}
         </main>
       ) : (
-        /* Landing View: Normal Document Scroll with Imageory Whitespace & JoinAria Blue Tint */
+        /* Landing View: Taste Skill Inspired Smokey Sky Aesthetic with Immense Breathing Space */
         <>
-          <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 desk:px-8 pt-8 sm:pt-14 pb-16 flex flex-col items-center justify-center text-center relative animate-in fade-in duration-300">
-            {/* Soft Ambient Glacier Blue Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(63,108,201,0.08)_0%,transparent_70%)] pointer-events-none -z-10" />
-
-            {/* Badge pill with pulse dot */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#f0f5ff] border border-[#d6e4ff] text-[#0033ff] text-[12px] font-semibold mb-6 shadow-xs select-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0033ff] shadow-[0_0_8px_#0033ff]" />
-              <span>Package Intelligence & Supply Chain Audit</span>
+          <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 desk:px-8 pt-20 sm:pt-28 desk:pt-32 pb-32 sm:pb-40 flex flex-col items-center justify-center text-center relative z-10 animate-in fade-in duration-300">
+            {/* Pill badge with pulse dot in taste-skill aesthetic */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-[#bfdbfe]/80 text-[#1d53c6] font-pixel text-[9.5px] uppercase tracking-wide mb-8 shadow-[0_2px_12px_rgba(14,165,233,0.12)] select-none hover:-translate-y-0.5 transition-transform">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1d53c6] shadow-[0_0_8px_#38bdf8]" />
+              <span>Package Intelligence &amp; Supply Chain Audit</span>
             </div>
 
-            {/* Display Headline */}
-            <h1 className="font-sans font-bold text-[38px] sm:text-[54px] desk:text-[66px] leading-[1.06] tracking-[-0.04em] text-[#0e0f12] max-w-3xl">
-              Audit packages before you run <span className="text-[#0033ff] inline-block">install.</span>
+            {/* Single Line Headline with neo-arcade pixel display font */}
+            <h1 className="font-display font-bold text-[36px] sm:text-[54px] desk:text-[68px] leading-[1.05] tracking-tight text-[#0f172a] whitespace-normal sm:whitespace-nowrap max-w-5xl">
+              Audit packages before you run <span className="text-white bg-[#1d53c6] px-3 py-0.5 rounded-[12px] inline-block shadow-[0_4px_16px_rgba(29,83,198,0.35)]">install.</span>
             </h1>
 
-            {/* Lede sentence */}
-            <p className="mt-5 text-[16px] sm:text-[18px] text-[#555a64] max-w-xl leading-relaxed">
-              Real-time vulnerability audits, supply chain dependency graph solver, download velocity trends, and OpenSSF scorecards across npm and PyPI.
+            {/* Lede sentence with generous breathing space */}
+            <p className="mt-5 text-[15px] sm:text-[17px] text-[#475569] max-w-xl mx-auto leading-relaxed">
+              Real-time vulnerability audits, supply chain dependency solver, download velocity trends, and OpenSSF scorecards across npm &amp; PyPI.
             </p>
 
-            {/* Centralized Search Bar with Imageory tactile depth */}
-            <div className="mt-8 sm:mt-10 w-full max-w-2xl">
+            {/* Centralized Search Bar with tactile depth */}
+            <div className="mt-10 sm:mt-12 w-full max-w-2xl">
               <SearchBar inputRef={searchInputRef} />
             </div>
 
-            {/* Popular packages quick pills */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 max-w-xl text-[12px]">
-              <span className="text-[#8c8d94] font-medium mr-1">Trending {ecosystem.toUpperCase()}:</span>
+            {/* Popular packages quick pills with pixel label */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-2xl text-[12px]">
+              <span className="font-pixel text-[9px] text-[#64748b] uppercase tracking-wider mr-1">
+                Trending {ecosystem.toUpperCase()}:
+              </span>
               {POPULAR_PACKAGES[ecosystem].map((pkg) => (
                 <Link
                   key={pkg}
                   href={`/?ecosystem=${ecosystem}&package=${pkg}&type=overview`}
-                  className="font-mono bg-white/90 border border-[#0000000d] hover:border-[#b2c8f0] hover:text-[#0033ff] hover:bg-[#f4f8ff] px-3 py-1 rounded-full text-[#4a5568] transition-all duration-180 hover:-translate-y-0.5 hover:shadow-xs active:scale-[0.96]"
+                  className="font-mono bg-white/80 backdrop-blur-sm border border-[#e2e8f0] hover:border-[#38bdf8] hover:text-[#1d53c6] hover:bg-[#eff6ff] px-3.5 py-1 rounded-full text-[#334155] transition-all duration-180 hover:-translate-y-0.5 hover:shadow-xs active:scale-[0.96]"
                 >
                   {pkg}
                 </Link>
               ))}
             </div>
+
+            {/* Stageshow Interactive Miniature Product Showcase */}
+            {/* <LandingProductStage /> */}
           </main>
 
           {/* Footer on Landing Page */}
-          <footer className="w-full border-t border-[#0000000a] bg-white/50 backdrop-blur-sm py-6 mt-auto text-[12px] text-[#8c8d94]">
+          <footer className="w-full border-t border-[#e2e8f0]/80 bg-white/60 backdrop-blur-md py-6 mt-auto text-[12px] text-[#64748b] relative z-10">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-[#0e0f12] tracking-tight">DEPSDIVE</span>
+                <span className="font-display font-bold text-[16px] text-[#0f172a] tracking-tight">KNOWYOURDEPS</span>
                 <span>•</span>
-                <span>Package intelligence & supply chain audit engine</span>
+                <span>Package intelligence &amp; supply chain audit engine</span>
               </div>
 
               <div className="flex items-center gap-4">
-                <span className="text-[#6e6e6e]">Zero browser calls to external third-party APIs</span>
+                <span className="text-[#64748b]">Zero browser calls to external third-party APIs</span>
                 <span>•</span>
                 <button
                   type="button"
                   onClick={openCompareModalDirect}
-                  className="text-[#0033ff] hover:underline font-medium cursor-pointer"
+                  className="text-[#1d53c6] hover:underline font-medium cursor-pointer"
                 >
                   Compare Packages
                 </button>
@@ -334,8 +397,8 @@ export default function Page() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
-          <div className="w-8 h-8 border-2 border-[#0033ff] border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+          <div className="w-8 h-8 border-2 border-[#1d53c6] border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

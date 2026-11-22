@@ -36,7 +36,7 @@ interface HistoryTabProps {
 export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentPeriod = searchParams.get('period') || '30d';
+  const currentPeriod = searchParams.get('period') || '365d';
 
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
 
   return (
     <div className="flex flex-col gap-6 animate-tab-in">
-      {/* Header Bar: Title + Period Selector */}
+      {/* Header Bar: Title */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-[#e8e8e8] p-5 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div>
           <div className="flex items-center gap-2">
@@ -107,108 +107,118 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
             Real-time installation velocity, community engagement signals, package geometry, and release cadence.
           </p>
         </div>
-
-        {/* Period Selector Tabs with tactile micro-interactions */}
-        <div className="flex items-center rounded-[12px] border border-[#e8e8e8] bg-[#f8f8f8] p-1 shadow-2xs">
-          {['7d', '30d', '90d', '365d'].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => changePeriod(p)}
-              className={`rounded-[8px] px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 cursor-pointer select-none active:scale-[0.95] active:translate-y-[1px] ${
-                currentPeriod === p
-                  ? 'bg-[#0033ff] text-white shadow-[0_2px_0_#0026bf]'
-                  : 'text-[#6e6e6e] hover:text-[#1a1a1a] hover:bg-white'
-              }`}
-            >
-              {p.toUpperCase()}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* 4 Download Velocity KPI Cards */}
+      {/* 4 Download Velocity KPI Cards with Pixel Fonts & Shimmer Skeletons */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total in Period */}
         <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#8c8c8c]">
-            <span className="text-[11.5px] font-semibold uppercase tracking-wider">Total in {currentPeriod}</span>
-            <TrendingUp className="h-4 w-4 text-[#0033ff]" />
+          <div className="flex items-center justify-between text-[#555a64]">
+            <span className="text-[11.5px] font-semibold uppercase tracking-wider">Total Annual Velocity</span>
+            <TrendingUp className="h-4 w-4 text-[#1d53c6]" />
           </div>
-          <div className="mt-2 text-[26px] font-mono font-bold text-[#1a1a1a] tabular-nums">
-            {loading ? '...' : data?.totalDownloads ? data.totalDownloads.toLocaleString() : '0'}
-          </div>
-          <span className="text-[11px] text-[#8c8c8c] mt-1">
-            {formatNumber(data?.totalDownloads)} cumulative installations
+          {loading ? (
+            <div className="my-2 h-7 w-28 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+          ) : (
+            <div className="mt-2 text-[26px] font-display font-bold text-[#1a1a1a] tabular-nums">
+              {data?.totalDownloads ? data.totalDownloads.toLocaleString() : '0'}
+            </div>
+          )}
+          <span className="text-[11px] text-[#555a64] mt-1">
+            {loading ? '...' : `${formatNumber(data?.totalDownloads)} cumulative installations`}
           </span>
         </div>
 
         {/* Daily Average */}
         <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#8c8c8c]">
+          <div className="flex items-center justify-between text-[#555a64]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Daily Average</span>
             <Activity className="h-4 w-4 text-[#17a45c]" />
           </div>
-          <div className="mt-2 text-[26px] font-mono font-bold text-[#1a1a1a] tabular-nums">
-            {loading ? '...' : data?.dailyAverage ? data.dailyAverage.toLocaleString() : '0'}
-          </div>
-          <span className="text-[11px] text-[#8c8c8c] mt-1">
-            ~{formatNumber(data?.dailyAverage)} downloads / day
+          {loading ? (
+            <div className="my-2 h-7 w-24 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+          ) : (
+            <div className="mt-2 text-[26px] font-display font-bold text-[#1a1a1a] tabular-nums">
+              {data?.dailyAverage ? data.dailyAverage.toLocaleString() : '0'}
+            </div>
+          )}
+          <span className="text-[11px] text-[#555a64] mt-1">
+            {loading ? '...' : `~${formatNumber(data?.dailyAverage)} downloads / day`}
           </span>
         </div>
 
         {/* Growth Velocity */}
         <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#8c8c8c]">
+          <div className="flex items-center justify-between text-[#555a64]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Velocity Growth</span>
             <Zap className="h-4 w-4 text-amber-500" />
           </div>
-          <div className="mt-2 flex items-center gap-1.5 text-[26px] font-mono font-bold">
-            {loading ? (
-              <span className="text-[#8c8c8c]">...</span>
-            ) : data?.growthRatePercent !== undefined ? (
-              <>
-                {data.growthRatePercent >= 0 ? (
-                  <TrendingUp className="h-5 w-5 text-[#17a45c]" />
-                ) : (
-                  <TrendingDown className="h-5 w-5 text-[#e5484d]" />
-                )}
-                <span
-                  className={`tabular-nums ${
-                    data.growthRatePercent >= 0 ? 'text-[#17a45c]' : 'text-[#e5484d]'
-                  }`}
-                >
-                  {data.growthRatePercent >= 0 ? `+${data.growthRatePercent}%` : `${data.growthRatePercent}%`}
-                </span>
-              </>
-            ) : (
-              <span className="text-[#a6a6a6]">—</span>
-            )}
-          </div>
-          <span className="text-[11px] text-[#8c8c8c] mt-1">vs. prior half period</span>
+          {loading ? (
+            <div className="my-2 h-7 w-20 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+          ) : (
+            <div className="mt-2 flex items-center gap-1.5 text-[26px] font-display font-bold">
+              {data?.growthRatePercent !== undefined ? (
+                <>
+                  {data.growthRatePercent >= 0 ? (
+                    <TrendingUp className="h-5 w-5 text-[#17a45c]" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-[#e5484d]" />
+                  )}
+                  <span
+                    className={`tabular-nums ${
+                      data.growthRatePercent >= 0 ? 'text-[#17a45c]' : 'text-[#e5484d]'
+                    }`}
+                  >
+                    {data.growthRatePercent >= 0 ? `+${data.growthRatePercent}%` : `${data.growthRatePercent}%`}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[#a6a6a6]">—</span>
+              )}
+            </div>
+          )}
+          <span className="text-[11px] text-[#555a64] mt-1">vs. prior half period</span>
         </div>
 
         {/* Peak Surge Day */}
         <div className="p-4.5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-          <div className="flex items-center justify-between text-[#8c8c8c]">
+          <div className="flex items-center justify-between text-[#555a64]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Peak Single Day</span>
-            <Gauge className="h-4 w-4 text-[#8c8c8c]" />
+            <Gauge className="h-4 w-4 text-[#555a64]" />
           </div>
-          <div className="mt-2 text-[26px] font-mono font-bold text-[#1a1a1a] tabular-nums truncate">
-            {loading ? '...' : data?.peakDay ? data.peakDay.downloads.toLocaleString() : '—'}
-          </div>
-          <span className="text-[11px] text-[#8c8c8c] mt-1 truncate">
-            {data?.peakDay ? `Peak on ${data.peakDay.date}` : 'Across selected period'}
+          {loading ? (
+            <div className="my-2 h-7 w-28 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+          ) : (
+            <div className="mt-2 text-[26px] font-display font-bold text-[#1a1a1a] tabular-nums truncate">
+              {data?.peakDay ? data.peakDay.downloads.toLocaleString() : '—'}
+            </div>
+          )}
+          <span className="text-[11px] text-[#555a64] mt-1 truncate">
+            {loading ? '...' : data?.peakDay ? `Peak on ${data.peakDay.date}` : 'Across selected period'}
           </span>
         </div>
       </div>
 
-      {/* Main Animated Download Line Chart */}
+      {/* Main Download Line Chart with High-Fidelity Skeleton */}
       {loading ? (
-        <div className="flex h-[320px] w-full items-center justify-center rounded-[20px] border border-[#e8e8e8] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex flex-col items-center gap-2 text-[#6e6e6e]">
-            <Loader2 className="h-6 w-6 animate-spin text-[#0033ff]" />
-            <span className="text-[12px]">Retrieving registry download metrics...</span>
+        <div className="flex flex-col justify-between h-[300px] w-full rounded-[20px] border border-[#e8e8e8] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] animate-in fade-in duration-150">
+          <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-4">
+            <div className="space-y-2">
+              <div className="h-3 w-20 bg-[#f0f0f0] rounded animate-pulse" />
+              <div className="h-8 w-36 bg-[#f0f0f0] rounded-[8px] animate-pulse" />
+            </div>
+            <div className="h-6 w-28 bg-[#f0f0f0] rounded animate-pulse" />
+          </div>
+          {/* Faux grid lines */}
+          <div className="space-y-8 py-4">
+            <div className="h-px w-full bg-[#f6f6f6]" />
+            <div className="h-px w-full bg-[#f6f6f6]" />
+            <div className="h-px w-full bg-[#f6f6f6]" />
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f0]">
+            <div className="h-3 w-16 bg-[#f0f0f0] rounded animate-pulse" />
+            <div className="h-3 w-16 bg-[#f0f0f0] rounded animate-pulse" />
+            <div className="h-3 w-16 bg-[#f0f0f0] rounded animate-pulse" />
           </div>
         </div>
       ) : error ? (
@@ -222,7 +232,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
       ) : data ? (
         <div className="flex flex-col gap-3">
           <DownloadChart data={data.history} />
-          <div className="text-[11px] text-[#8c8c8c] flex items-center justify-between px-2">
+          <div className="text-[11px] text-[#555a64] flex items-center justify-between px-2">
             <span>
               <strong>Methodology:</strong> Downloads reflect registry client GET requests and CI/CD runs. Source: <strong>{data.source}</strong>.
             </span>
@@ -237,7 +247,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
       {data && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <span className="text-[11.5px] font-semibold text-[#8c8c8c] uppercase tracking-wider block">
+            <span className="text-[11.5px] font-semibold text-[#555a64] uppercase tracking-wider block">
               30-Day Run Rate
             </span>
             <div className="mt-1 font-mono text-[20px] font-bold text-[#1a1a1a]">
@@ -247,7 +257,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
           </div>
 
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <span className="text-[11.5px] font-semibold text-[#8c8c8c] uppercase tracking-wider block">
+            <span className="text-[11.5px] font-semibold text-[#555a64] uppercase tracking-wider block">
               Annualized Velocity
             </span>
             <div className="mt-1 font-mono text-[20px] font-bold text-[#1a1a1a]">
@@ -257,7 +267,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
           </div>
 
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <span className="text-[11.5px] font-semibold text-[#8c8c8c] uppercase tracking-wider block">
+            <span className="text-[11.5px] font-semibold text-[#555a64] uppercase tracking-wider block">
               Adoption Momentum
             </span>
             <div className="mt-1 flex items-center gap-1.5 font-bold text-[18px]">
@@ -268,8 +278,8 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
                 </>
               ) : (data.growthRatePercent || 0) >= -10 ? (
                 <>
-                  <CheckCircle2 className="h-4 w-4 text-[#0033ff]" />
-                  <span className="text-[#0033ff]">Steady / Mature</span>
+                  <CheckCircle2 className="h-4 w-4 text-[#1d53c6]" />
+                  <span className="text-[#1d53c6]">Steady / Mature</span>
                 </>
               ) : (
                 <>
@@ -300,7 +310,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
                 href={pkg.repository}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[12px] font-semibold text-[#0033ff] hover:underline"
+                className="text-[12px] font-semibold text-[#1d53c6] hover:underline"
               >
                 View Repository →
               </a>
@@ -310,67 +320,67 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {/* Stars */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
                 <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
                 <span>GitHub Stars</span>
               </div>
               <div className="mt-1.5 font-mono text-[18px] font-bold text-[#1a1a1a]">
                 {formatNumber(pkg.starsCount)}
               </div>
-              <span className="text-[10px] text-[#8c8c8c]">Stargazers</span>
+              <span className="text-[10px] text-[#555a64]">Stargazers</span>
             </div>
 
             {/* Forks */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
-                <GitFork className="h-3.5 w-3.5 text-[#0033ff]" />
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
+                <GitFork className="h-3.5 w-3.5 text-[#1d53c6]" />
                 <span>Forks</span>
               </div>
               <div className="mt-1.5 font-mono text-[18px] font-bold text-[#1a1a1a]">
                 {formatNumber(pkg.forksCount)}
               </div>
-              <span className="text-[10px] text-[#8c8c8c]">Network forks</span>
+              <span className="text-[10px] text-[#555a64]">Network forks</span>
             </div>
 
             {/* Open Issues */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
                 <AlertCircle className="h-3.5 w-3.5 text-[#e5484d]" />
                 <span>Open Issues</span>
               </div>
               <div className="mt-1.5 font-mono text-[18px] font-bold text-[#1a1a1a]">
                 {formatNumber(pkg.openIssuesCount)}
               </div>
-              <span className="text-[10px] text-[#8c8c8c]">Unresolved issues</span>
+              <span className="text-[10px] text-[#555a64]">Unresolved issues</span>
             </div>
 
             {/* Watchers */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
                 <Eye className="h-3.5 w-3.5 text-[#6e6e6e]" />
                 <span>Watchers</span>
               </div>
               <div className="mt-1.5 font-mono text-[18px] font-bold text-[#1a1a1a]">
                 {formatNumber(pkg.watchersCount)}
               </div>
-              <span className="text-[10px] text-[#8c8c8c]">Subscribers</span>
+              <span className="text-[10px] text-[#555a64]">Subscribers</span>
             </div>
 
             {/* Direct Dependencies */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
-                <Layers className="h-3.5 w-3.5 text-[#0033ff]" />
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
+                <Layers className="h-3.5 w-3.5 text-[#1d53c6]" />
                 <span>Direct Deps</span>
               </div>
               <div className="mt-1.5 font-mono text-[18px] font-bold text-[#1a1a1a]">
                 {pkg.dependenciesCount !== undefined ? pkg.dependenciesCount : '—'}
               </div>
-              <span className="text-[10px] text-[#8c8c8c]">Declared imports</span>
+              <span className="text-[10px] text-[#555a64]">Declared imports</span>
             </div>
 
             {/* License Suitability */}
             <div className="p-3.5 bg-[#fbfbfb] border border-[#f0f0f0] rounded-[14px]">
-              <div className="flex items-center gap-1 text-[#8c8c8c] text-[11px] font-medium">
+              <div className="flex items-center gap-1 text-[#555a64] text-[11px] font-medium">
                 <Scale className="h-3.5 w-3.5 text-[#17a45c]" />
                 <span>License</span>
               </div>
@@ -390,8 +400,8 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Unpacked Size */}
           <div className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-2 text-[#8c8c8c] text-[12px] font-semibold">
-              <HardDrive className="h-4 w-4 text-[#0033ff]" />
+            <div className="flex items-center gap-2 text-[#555a64] text-[12px] font-semibold">
+              <HardDrive className="h-4 w-4 text-[#1d53c6]" />
               <span>UNPACKED SIZE</span>
             </div>
             <div className="mt-2 font-mono text-[22px] font-bold text-[#1a1a1a]">
@@ -404,15 +414,15 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
 
           {/* Type Safety */}
           <div className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-2 text-[#8c8c8c] text-[12px] font-semibold">
+            <div className="flex items-center gap-2 text-[#555a64] text-[12px] font-semibold">
               <FileCode className="h-4 w-4 text-[#17a45c]" />
               <span>TYPE DEFINITIONS</span>
             </div>
             <div className="mt-2 text-[18px] font-bold text-[#1a1a1a]">
               {pkg.hasTypeDefinitions ? (
-                <span className="text-[#0033ff]">{pkg.typeDefinitionsType || 'Included'}</span>
+                <span className="text-[#1d53c6]">{pkg.typeDefinitionsType || 'Included'}</span>
               ) : (
-                <span className="text-[#8c8c8c]">Untyped</span>
+                <span className="text-[#555a64]">Untyped</span>
               )}
             </div>
             <span className="text-[11px] text-[#6e6e6e] mt-1 block">
@@ -422,8 +432,8 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
 
           {/* Release Cadence */}
           <div className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-2 text-[#8c8c8c] text-[12px] font-semibold">
-              <Clock className="h-4 w-4 text-[#8c8c8c]" />
+            <div className="flex items-center gap-2 text-[#555a64] text-[12px] font-semibold">
+              <Clock className="h-4 w-4 text-[#555a64]" />
               <span>RELEASE CADENCE</span>
             </div>
             <div className="mt-2 font-mono text-[22px] font-bold text-[#1a1a1a]">
@@ -436,7 +446,7 @@ export function HistoryTab({ ecosystem, packageName, pkg }: HistoryTabProps) {
 
           {/* Runtime Compatibility */}
           <div className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center gap-2 text-[#8c8c8c] text-[12px] font-semibold">
+            <div className="flex items-center gap-2 text-[#555a64] text-[12px] font-semibold">
               <Zap className="h-4 w-4 text-amber-500" />
               <span>RUNTIME COMPATIBILITY</span>
             </div>

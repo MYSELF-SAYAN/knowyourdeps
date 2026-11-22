@@ -48,7 +48,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
       <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Shuffle className="h-5 w-5 text-[#0033ff]" />
+            <Shuffle className="h-5 w-5 text-[#1d53c6]" />
             <h3 className="font-sans font-bold text-[18px] text-[#1a1a1a]">
               Alternatives & Ecosystem Counterparts
             </h3>
@@ -58,17 +58,37 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-[12px] text-[#8c8c8c]">
+        <div className="flex items-center gap-2 text-[12px] text-[#555a64]">
           <span>{functionalAlternatives.length} recommended</span>
           {typosquats.length > 0 && <span>• {typosquats.length} typosquat warnings</span>}
         </div>
       </div>
 
-      {/* Loading Skeleton */}
+      {/* Loading Skeleton: High-Fidelity Alternative Cards */}
       {loading && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in fade-in duration-150">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-[#f4f4f4] rounded-[16px] animate-pulse" />
+            <div
+              key={i}
+              className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3.5 animate-pulse"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-32 bg-[#f0f0f0] rounded-[6px]" />
+                  <div className="h-5 w-14 bg-[#f0f0f0] rounded-[6px]" />
+                </div>
+                <div className="h-8 w-24 bg-[#f0f0f0] rounded-[10px]" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-3.5 w-full bg-[#f0f0f0] rounded" />
+                <div className="h-3.5 w-4/5 bg-[#f0f0f0] rounded" />
+              </div>
+              <div className="pt-2 border-t border-[#f0f0f0] flex items-center gap-4">
+                <div className="h-4 w-20 bg-[#f0f0f0] rounded" />
+                <div className="h-4 w-24 bg-[#f0f0f0] rounded" />
+                <div className="h-4 w-16 bg-[#f0f0f0] rounded" />
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -107,11 +127,11 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
                       <span className="font-mono text-[13px] font-bold text-[#b45309]">
                         {typo.name}
                       </span>
-                      <span className="block text-[10px] text-[#8c8c8c]">{typo.reason}</span>
+                      <span className="block text-[10px] text-[#555a64]">{typo.reason}</span>
                     </div>
                     <Link
                       href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(typo.name)}&type=overview`}
-                      className="text-[11px] text-[#0033ff] hover:underline font-medium"
+                      className="text-[11px] text-[#1d53c6] hover:underline font-medium"
                     >
                       Audit
                     </Link>
@@ -127,7 +147,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
       {!loading && functionalAlternatives.length > 0 && (
         <div className="flex flex-col gap-4">
           <h4 className="font-sans font-bold text-[16px] text-[#1a1a1a] flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#0033ff]" />
+            <Sparkles className="h-4 w-4 text-[#1d53c6]" />
             Curated Functional Alternatives
           </h4>
 
@@ -135,7 +155,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
             {functionalAlternatives.map((alt) => (
               <div
                 key={alt.name}
-                className="bg-white border border-[#e8e8e8] rounded-[18px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#c7d3ff] hover:shadow-[0_4px_16px_rgba(0,51,255,0.06)] transition-all flex flex-col justify-between"
+                className="bg-white border border-[#e8e8e8] rounded-[18px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#bfdbfe] hover:shadow-[0_4px_16px_rgba(0,51,255,0.06)] transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
@@ -143,7 +163,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(alt.name)}&type=overview`}
-                          className="font-mono text-[16px] font-bold text-[#1a1a1a] hover:text-[#0033ff] transition-colors"
+                          className="font-mono text-[16px] font-bold text-[#1a1a1a] hover:text-[#1d53c6] transition-colors"
                         >
                           {alt.name}
                         </Link>
@@ -158,7 +178,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
                   </div>
 
                   {/* Recommendation Reason Pill */}
-                  <div className="mt-3 inline-flex items-center gap-1.5 bg-[#f5f7ff] border border-[#d6e0ff] text-[#0033ff] px-2.5 py-1 rounded-[8px] text-[11px] font-medium">
+                  <div className="mt-3 inline-flex items-center gap-1.5 bg-[#f5f7ff] border border-[#bfdbfe] text-[#1d53c6] px-2.5 py-1 rounded-[8px] text-[11px] font-medium">
                     <Sparkles className="h-3 w-3" />
                     <span>{alt.reason}</span>
                   </div>
@@ -168,16 +188,16 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
                 <div className="mt-5 pt-3.5 border-t border-[#f0f0f0] flex items-center justify-between">
                   <div className="flex items-center gap-4 text-[12px] text-[#6e6e6e]">
                     <div className="flex items-center gap-1.5">
-                      <Download className="h-3.5 w-3.5 text-[#8c8c8c]" />
+                      <Download className="h-3.5 w-3.5 text-[#555a64]" />
                       <span className="font-mono font-semibold text-[#1a1a1a] tabular-nums">
                         {alt.weeklyDownloads ? alt.weeklyDownloads.toLocaleString() : 'N/A'}
                       </span>
-                      <span className="text-[10px] text-[#8c8c8c]">/wk</span>
+                      <span className="text-[10px] text-[#555a64]">/wk</span>
                     </div>
 
                     {alt.stars !== undefined && alt.stars > 0 && (
                       <div className="flex items-center gap-1.5">
-                        <Star className="h-3.5 w-3.5 text-[#8c8c8c]" />
+                        <Star className="h-3.5 w-3.5 text-[#555a64]" />
                         <span className="font-mono font-semibold text-[#1a1a1a] tabular-nums">
                           {alt.stars.toLocaleString()}
                         </span>
@@ -199,7 +219,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
                     )}
                     <Link
                       href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(alt.name)}&type=overview`}
-                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#0033ff] hover:underline"
+                      className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#1d53c6] hover:underline"
                     >
                       Inspect <ArrowRight className="h-3 w-3" />
                     </Link>
@@ -214,7 +234,7 @@ export function AlternativesTab({ ecosystem, packageName, onCompareWith }: Alter
       {/* Empty State */}
       {!loading && functionalAlternatives.length === 0 && typosquats.length === 0 && (
         <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center">
-          <Shuffle className="h-8 w-8 text-[#8c8c8c] mb-2" />
+          <Shuffle className="h-8 w-8 text-[#555a64] mb-2" />
           <h4 className="font-sans font-bold text-[16px] text-[#1a1a1a]">No Direct Alternatives Found</h4>
           <p className="text-[13px] text-[#6e6e6e] max-w-[400px] mt-1">
             We haven't indexed specific drop-in alternatives for this package yet. Try searching for related packages with the search bar above.

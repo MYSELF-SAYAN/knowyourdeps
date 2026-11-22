@@ -83,7 +83,7 @@ export function PackageHeader({ pkg }: PackageHeaderProps) {
           <button
             onClick={copyCommand}
             aria-label="Copy install command"
-            className="flex items-center gap-1 rounded-[6px] bg-white border border-[#e8e8e8] px-2 py-1 text-[11px] font-semibold text-[#1a1a1a] hover:bg-[#ebefff] hover:border-[#c7d3ff] hover:text-[#0033ff] transition-all cursor-pointer shadow-2xs"
+            className="flex items-center gap-1 rounded-[6px] bg-white border border-[#e8e8e8] px-2 py-1 text-[11px] font-semibold text-[#1a1a1a] hover:bg-[#eff6ff] hover:border-[#bfdbfe] hover:text-[#1d53c6] transition-all cursor-pointer shadow-2xs"
           >
             {copied ? (
               <>

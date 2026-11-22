@@ -47,7 +47,7 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
   }, [ecosystem, packageName]);
 
   const getScorecardColor = (score?: number) => {
-    if (score === undefined || score === 0) return 'text-[#8c8c8c]';
+    if (score === undefined || score === 0) return 'text-[#555a64]';
     if (score >= 7.5) return 'text-[#17a45c]';
     if (score >= 5.0) return 'text-[#f76808]';
     return 'text-[#e5484d]';
@@ -66,24 +66,38 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
       <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-[16px] border flex flex-col items-center justify-center ${getScorecardBg(health?.scorecardScore)}`}>
-              <span className={`font-mono text-[20px] font-bold ${getScorecardColor(health?.scorecardScore)} tabular-nums`}>
-                {health?.scorecardScore ? health.scorecardScore.toFixed(1) : 'N/A'}
-              </span>
-              <span className="text-[9px] uppercase tracking-wider font-semibold text-[#8c8c8c]">
-                / 10
-              </span>
-            </div>
+            {loading ? (
+              <div className="w-14 h-14 rounded-[16px] bg-[#f0f0f0] animate-pulse" />
+            ) : (
+              <div
+                className={`w-14 h-14 rounded-[16px] border flex flex-col items-center justify-center ${getScorecardBg(
+                  health?.scorecardScore
+                )}`}
+              >
+                <span
+                  className={`font-display text-[22px] font-bold ${getScorecardColor(
+                    health?.scorecardScore
+                  )} tabular-nums`}
+                >
+                  {health?.scorecardScore ? health.scorecardScore.toFixed(1) : 'N/A'}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-[#555a64]">
+                  / 10
+                </span>
+              </div>
+            )}
 
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-sans font-bold text-[18px] text-[#1a1a1a]">
+                <h3 className="font-display font-bold text-[18px] text-[#1a1a1a]">
                   Repository Health & OpenSSF Scorecard
                 </h3>
-                {health?.scorecardScore && health.scorecardScore >= 7.5 ? (
+                {!loading && health?.scorecardScore && health.scorecardScore >= 7.5 ? (
                   <Badge variant="success">Healthy</Badge>
-                ) : (
+                ) : !loading ? (
                   <Badge variant="default">Evaluated</Badge>
+                ) : (
+                  <Badge variant="neutral">Auditing...</Badge>
                 )}
               </div>
               <p className="text-[13px] text-[#6e6e6e] mt-1">
@@ -108,11 +122,40 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
       </div>
 
       {/* Loading Skeleton */}
-      {loading && !health && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-[#f4f4f4] rounded-[16px] animate-pulse" />
-          ))}
+      {loading && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          {/* 4 KPI Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 animate-pulse"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-16 bg-[#f0f0f0] rounded" />
+                  <div className="h-4 w-4 bg-[#f0f0f0] rounded-full" />
+                </div>
+                <div className="h-7 w-20 bg-[#f0f0f0] rounded-[6px]" />
+                <div className="h-2.5 w-24 bg-[#f0f0f0] rounded" />
+              </div>
+            ))}
+          </div>
+
+          {/* Checks checklist shimmer */}
+          <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4 animate-pulse">
+            <div className="h-5 w-48 bg-[#f0f0f0] rounded-[6px]" />
+            <div className="divide-y divide-[#f0f0f0]">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#f0f0f0]" />
+                    <div className="h-4 w-36 bg-[#f0f0f0] rounded" />
+                  </div>
+                  <div className="h-5 w-16 bg-[#f0f0f0] rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -128,7 +171,7 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
       )}
 
       {/* Vital Metrics Grid */}
-      {health && (
+      {!loading && health && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* GitHub Stars */}
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
@@ -136,7 +179,7 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
               <span className="text-[11px] font-semibold uppercase tracking-wider">GitHub Stars</span>
               <Star className="h-4 w-4 text-[#e5a000]" />
             </div>
-            <div className="mt-2 font-mono text-[24px] font-bold text-[#1a1a1a] tabular-nums">
+            <div className="mt-2 font-display text-[26px] font-bold text-[#1a1a1a] tabular-nums">
               {health.stars ? health.stars.toLocaleString() : 'N/A'}
             </div>
           </div>
@@ -145,9 +188,9 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between text-[#6e6e6e]">
               <span className="text-[11px] font-semibold uppercase tracking-wider">Forks</span>
-              <GitFork className="h-4 w-4 text-[#8c8c8c]" />
+              <GitFork className="h-4 w-4 text-[#555a64]" />
             </div>
-            <div className="mt-2 font-mono text-[24px] font-bold text-[#1a1a1a] tabular-nums">
+            <div className="mt-2 font-display text-[26px] font-bold text-[#1a1a1a] tabular-nums">
               {health.forks ? health.forks.toLocaleString() : 'N/A'}
             </div>
           </div>
@@ -156,18 +199,18 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between text-[#6e6e6e]">
               <span className="text-[11px] font-semibold uppercase tracking-wider">Open Issues</span>
-              <AlertCircle className="h-4 w-4 text-[#8c8c8c]" />
+              <AlertCircle className="h-4 w-4 text-[#555a64]" />
             </div>
-            <div className="mt-2 font-mono text-[24px] font-bold text-[#1a1a1a] tabular-nums">
+            <div className="mt-2 font-display text-[26px] font-bold text-[#1a1a1a] tabular-nums">
               {health.openIssues !== undefined ? health.openIssues.toLocaleString() : 'N/A'}
             </div>
           </div>
 
-          {/* Last Commit */}
+          {/* Last Push */}
           <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
             <div className="flex items-center justify-between text-[#6e6e6e]">
               <span className="text-[11px] font-semibold uppercase tracking-wider">Last Push</span>
-              <Calendar className="h-4 w-4 text-[#0033ff]" />
+              <Calendar className="h-4 w-4 text-[#1d53c6]" />
             </div>
             <div className="mt-2 text-[15px] font-bold text-[#1a1a1a] truncate">
               {health.lastCommitDate
@@ -202,7 +245,7 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
                   ) : sig.status === 'warning' ? (
                     <AlertTriangle className="h-4 w-4 text-[#f76808] flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-[#8c8c8c] flex-shrink-0" />
+                    <div className="w-4 h-4 rounded-full border-2 border-[#555a64] flex-shrink-0" />
                   )}
                   <span className="font-sans font-medium text-[13px] text-[#1a1a1a]">
                     {sig.label}
@@ -223,7 +266,7 @@ export function HealthTab({ ecosystem, packageName }: HealthTabProps) {
 
       {/* No Repo Notice */}
       {health && !health.repoUrl && (
-        <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-[16px] p-6 text-center text-[13px] text-[#8c8c8c]">
+        <div className="bg-[#fafafa] border border-[#e8e8e8] rounded-[16px] p-6 text-center text-[13px] text-[#555a64]">
           No public source repository URL was detected in the package manifest metadata.
         </div>
       )}

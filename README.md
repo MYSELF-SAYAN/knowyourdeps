@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DepsDive — Dependency Security Intelligence & Audit Skill
 
-## Getting Started
+A high-performance modern web dashboard and AI agent companion skill for multi-engine supply-chain security auditing, CVE analysis, and automated compliance reporting.
 
-First, run the development server:
+---
 
+## ⚡ Features
+
+- **Multi-Source Vulnerability Intelligence:** Cross-referenced in real-time across **OSV.dev v1**, **Google deps.dev v3**, **NVD NIST 2.0**, and **GitHub Security Advisories**.
+- **Interactive Security Dashboard:** Search packages across npm and PyPI, filter active vs. historical CVEs, review CVSS v3.1 vectors, and inspect exact affected version bounds.
+- **Dual Compliance Deliverables:** Generates comprehensive **Markdown reports** and **21-column Excel-compatible CSV datasets** (with UTF-8 BOM encoding).
+- **AI Agent Skill Included:** Bundled with the official `knowyourdeps-audit` skill for AI agents (Antigravity, Cursor, Claude Code, Windsurf, Roo Code).
+
+---
+
+## 🤖 Using the AI Agent Skill (`knowyourdeps-audit`)
+
+This repository includes the complete audit skill in [`skills/knowyourdeps-audit/SKILL.md`](skills/knowyourdeps-audit/SKILL.md).
+
+### 1. Install via `skills.sh`
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx skills add <YOUR-GITHUB-USERNAME>/client
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Quick One-Line Install into Any Project
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**macOS / Linux / Git Bash:**
+```bash
+mkdir -p .agent/skills/knowyourdeps-audit && curl -sSL https://raw.githubusercontent.com/<YOUR-GITHUB-USERNAME>/<REPO-NAME>/main/skills/knowyourdeps-audit/SKILL.md -o .agent/skills/knowyourdeps-audit/SKILL.md
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Windows PowerShell:**
+```powershell
+New-Item -ItemType Directory -Force -Path .agent/skills/knowyourdeps-audit; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/<YOUR-GITHUB-USERNAME>/<REPO-NAME>/main/skills/knowyourdeps-audit/SKILL.md" -OutFile ".agent/skills/knowyourdeps-audit/SKILL.md"
+```
 
-## Learn More
+### 3. Connect to the Live MCP Server
+Add your live MCP endpoint (e.g., hosted on Render or local) to your agent's MCP configuration (`mcp_config.json`, `.cursor/mcp.json`, or `claude_desktop_config.json`):
 
-To learn more about Next.js, take a look at the following resources:
+```json
+{
+  "mcpServers": {
+    "knowyourdeps": {
+      "url": "https://<your-mcp-service>.onrender.com/sse"
+    }
+  }
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💻 Running the Web Client Locally
 
-## Deploy on Vercel
+### Prerequisites
+- Node.js 18.17+ or 20+
+- npm or pnpm
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Getting Started
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+### Building for Production
+
+```bash
+npm run build
+npm run start
+```
+
+---
+
+## 🚀 Deploying to Vercel
+
+The web client is built with Next.js App Router and deploys seamlessly to Vercel with 1 click:
+
+1. Push this repository to GitHub.
+2. Go to [vercel.com](https://vercel.com) ➔ **Add New Project**.
+3. Import your repository and click **Deploy**.

@@ -36,6 +36,45 @@ interface SecurityTabProps {
   onSelectVersion?: (version: string) => void;
 }
 
+function HighlightMatch({
+  text,
+  query,
+  className = '',
+  highlightClassName = 'bg-[#fef08a] text-[#713f12] font-semibold px-0.5 rounded-[3px] border border-[#fde047]/60 shadow-2xs',
+}: {
+  text: string;
+  query: string;
+  className?: string;
+  highlightClassName?: string;
+}) {
+  if (!query || !query.trim() || !text) {
+    return <span className={className}>{text}</span>;
+  }
+
+  const trimmedQuery = query.trim();
+  const escaped = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  const parts = text.split(regex);
+
+  if (parts.length === 1) {
+    return <span className={className}>{text}</span>;
+  }
+
+  return (
+    <span className={className}>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className={highlightClassName}>
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+}
+
 export function SecurityTab({ ecosystem, packageName, version: initialVersion, onSelectVersion }: SecurityTabProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -186,21 +225,37 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
   });
 
   // Filter by severity & search query (CVE ID, title, summary, aliases)
-  const filteredAdvisories = scopedList.filter((adv) => {
-    if (severityFilter !== 'all' && adv.severity.toLowerCase() !== severityFilter.toLowerCase()) {
-      return false;
-    }
-    if (hasSearchQuery) {
-      const q = cveSearchQuery.trim().toLowerCase();
-      const matchId = adv.id.toLowerCase().includes(q);
-      const matchTitle = adv.title.toLowerCase().includes(q);
-      const matchSummary = adv.summary.toLowerCase().includes(q);
-      const matchAlias = (adv.aliases || []).some((a) => a.toLowerCase().includes(q));
-      const matchComp = (adv.component || '').toLowerCase().includes(q);
-      return matchId || matchTitle || matchSummary || matchAlias || matchComp;
-    }
-    return true;
-  });
+  const filteredAdvisories = scopedList
+    .filter((adv) => {
+      if (severityFilter !== 'all' && adv.severity.toLowerCase() !== severityFilter.toLowerCase()) {
+        return false;
+      }
+      if (hasSearchQuery) {
+        const q = cveSearchQuery.trim().toLowerCase();
+        const matchId = adv.id.toLowerCase().includes(q);
+        const matchTitle = adv.title.toLowerCase().includes(q);
+        const matchSummary = adv.summary.toLowerCase().includes(q);
+        const matchAlias = (adv.aliases || []).some((a) => a.toLowerCase().includes(q));
+        const matchComp = (adv.component || '').toLowerCase().includes(q);
+        return matchId || matchTitle || matchSummary || matchAlias || matchComp;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (hasSearchQuery) {
+        const q = cveSearchQuery.trim().toLowerCase();
+        const aExact = a.id.toLowerCase() === q || (a.aliases || []).some((al) => al.toLowerCase() === q);
+        const bExact = b.id.toLowerCase() === q || (b.aliases || []).some((al) => al.toLowerCase() === q);
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        const aIdMatch = a.id.toLowerCase().includes(q) || (a.aliases || []).some((al) => al.toLowerCase().includes(q));
+        const bIdMatch = b.id.toLowerCase().includes(q) || (b.aliases || []).some((al) => al.toLowerCase().includes(q));
+        if (aIdMatch && !bIdMatch) return -1;
+        if (!aIdMatch && bIdMatch) return 1;
+      }
+      return 0;
+    });
 
   const filteredVersions = availableVersions.filter((v) =>
     v.version.toLowerCase().includes(versionSearch.toLowerCase())
@@ -598,17 +653,26 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               type="text"
               value={cveSearchQuery}
               onChange={(e) => setCveSearchQuery(e.target.value)}
-              placeholder="Search CVE ID..."
-              className="w-full pl-9 pr-7 py-1.5 text-[12px] bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setCveSearchQuery('');
+              }}
+              placeholder="Search CVE ID (e.g. CVE-2024)..."
+              className="w-full pl-9 pr-16 py-1.5 text-[12px] bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
             />
             {cveSearchQuery && (
-              <button
-                type="button"
-                onClick={() => setCveSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-[#64748b] hover:text-[#0f172a] cursor-pointer"
-              >
-                ✕
-              </button>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold bg-[#eff6ff] text-[#1d53c6] border border-[#bfdbfe]">
+                  {filteredAdvisories.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCveSearchQuery('')}
+                  className="text-[11px] text-[#64748b] hover:text-[#0f172a] cursor-pointer"
+                  title="Clear search (Esc)"
+                >
+                  ✕
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -808,15 +872,50 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         </span>
                       )}
 
-                      <span className="font-mono text-[14px] font-bold text-[#1a1a1a]">
-                        {advisory.id}
-                      </span>
+                      {/* Primary ID with realtime highlighting */}
+                      {(() => {
+                        const isPrimaryMatch =
+                          hasSearchQuery &&
+                          advisory.id.toLowerCase().includes(cveSearchQuery.trim().toLowerCase());
+                        return (
+                          <span
+                            className={`font-mono text-[14px] font-bold px-1.5 py-0.5 rounded-md transition-all duration-150 ${
+                              isPrimaryMatch
+                                ? 'bg-[#eff6ff] text-[#1d53c6] ring-1.5 ring-[#38bdf8] shadow-xs'
+                                : 'text-[#1a1a1a]'
+                            }`}
+                          >
+                            <HighlightMatch
+                              text={advisory.id}
+                              query={cveSearchQuery}
+                              highlightClassName="bg-[#fef08a] text-[#713f12] font-bold px-0.5 rounded-[2px]"
+                            />
+                          </span>
+                        );
+                      })()}
 
-                      {advisory.aliases?.map((alias) => (
-                        <span key={alias} className="font-mono text-[11px] text-[#555a64] bg-[#f4f4f4] px-1.5 py-0.5 rounded">
-                          {alias}
-                        </span>
-                      ))}
+                      {/* List of Alias IDs with realtime highlighting */}
+                      {advisory.aliases?.map((alias) => {
+                        const isAliasMatch =
+                          hasSearchQuery &&
+                          alias.toLowerCase().includes(cveSearchQuery.trim().toLowerCase());
+                        return (
+                          <span
+                            key={alias}
+                            className={`font-mono text-[11px] px-1.5 py-0.5 rounded transition-all duration-150 ${
+                              isAliasMatch
+                                ? 'bg-[#fef9c3] text-[#713f12] ring-1.5 ring-[#eab308] font-bold shadow-xs animate-in zoom-in-95'
+                                : 'text-[#555a64] bg-[#f4f4f4]'
+                            }`}
+                          >
+                            <HighlightMatch
+                              text={alias}
+                              query={cveSearchQuery}
+                              highlightClassName="bg-[#fef08a] text-[#713f12] font-bold px-0.5 rounded-[2px]"
+                            />
+                          </span>
+                        );
+                      })}
 
                       {/* Component Origin Badge */}
                       {advisory.component && advisory.component !== packageName && (
@@ -863,14 +962,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                     </div>
                   </div>
 
-                  {/* Title & Summary */}
+                  {/* Title & Summary with realtime query highlight */}
                   <div className="mt-3">
                     <h4 className="font-sans font-semibold text-[15px] text-[#1a1a1a]">
-                      {advisory.title}
+                      <HighlightMatch text={advisory.title} query={cveSearchQuery} />
                     </h4>
                     {advisory.summary && advisory.title !== advisory.summary && (
                       <p className="text-[13px] text-[#6e6e6e] mt-1.5 leading-relaxed line-clamp-2">
-                        {advisory.summary}
+                        <HighlightMatch text={advisory.summary} query={cveSearchQuery} />
                       </p>
                     )}
                   </div>
@@ -895,10 +994,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                     </div>
                   </div>
 
-                  {/* Expanded Technical Details / Disclosure */}
+                  {/* Expanded Technical Details / Disclosure with realtime query highlight */}
                   {isExpanded && advisory.details && (
                     <div className="mt-4 p-4 bg-[#fafafa] border border-[#e8e8e8] rounded-[12px] text-[12px] font-mono leading-relaxed text-[#333333] whitespace-pre-wrap max-h-80 overflow-y-auto">
-                      {advisory.details}
+                      <HighlightMatch text={advisory.details} query={cveSearchQuery} />
                     </div>
                   )}
 

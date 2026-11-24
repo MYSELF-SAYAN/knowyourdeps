@@ -27,13 +27,14 @@ function parseAffectedRange(affectedList: any[] = []): string {
   for (const item of affectedList) {
     for (const range of item.ranges || []) {
       let introduced = '';
-      let fixed = '';
+      let upper = '';
       for (const event of range.events || []) {
         if (event.introduced && event.introduced !== '0') introduced = `>= ${event.introduced}`;
-        if (event.fixed) fixed = `< ${event.fixed}`;
+        if (event.fixed) upper = `< ${event.fixed}`;
+        if (event.last_affected) upper = `<= ${event.last_affected}`;
       }
-      if (introduced && fixed) parts.push(`${introduced}, ${fixed}`);
-      else if (fixed) parts.push(fixed);
+      if (introduced && upper) parts.push(`${introduced}, ${upper}`);
+      else if (upper) parts.push(upper);
       else if (introduced) parts.push(introduced);
     }
   }
@@ -78,13 +79,20 @@ function isVersionInAffectedRange(targetVer: string, affectedList: any[] = []): 
     for (const range of item.ranges || []) {
       let introduced = '';
       let fixed = '';
+      let lastAffected = '';
       for (const event of range.events || []) {
         if (event.introduced) introduced = event.introduced;
         if (event.fixed) fixed = event.fixed;
+        if (event.last_affected) lastAffected = event.last_affected;
       }
       const introOk = !introduced || introduced === '0' || compareSemver(targetVer, introduced) >= 0;
-      const fixedOk = !fixed || compareSemver(targetVer, fixed) < 0;
-      if (introOk && fixedOk) {
+      let upperOk = true;
+      if (fixed) {
+        upperOk = compareSemver(targetVer, fixed) < 0;
+      } else if (lastAffected) {
+        upperOk = compareSemver(targetVer, lastAffected) <= 0;
+      }
+      if (introOk && upperOk) {
         return true;
       }
     }
@@ -94,20 +102,38 @@ function isVersionInAffectedRange(targetVer: string, affectedList: any[] = []): 
 
 function isSemverInRange(ver: string, rangeStr?: string): boolean {
   if (!rangeStr || !ver || ver === 'latest') return false;
-  const parts = rangeStr.split(',').map((s) => s.trim()).filter(Boolean);
-  for (const part of parts) {
-    const match = part.match(/^([><]=?|=)\s*([0-9a-zA-Z.-]+)/);
-    if (!match) continue;
-    const op = match[1];
+  // Handle OR clauses (| or ||)
+  const orClauses = rangeStr.split(/\|\|?/).map((s) => s.trim()).filter(Boolean);
+  if (orClauses.length > 1) {
+    return orClauses.some((clause) => isSemverInRange(ver, clause));
+  }
+
+  const clause = orClauses[0];
+  // Check if it's a comma-separated list of exact versions without operators: '18.0.0, 18.0.1'
+  if (!/[><=]/.test(clause)) {
+    const exactVersions = clause.split(',').map((s) => s.trim()).filter(Boolean);
+    return exactVersions.some((ev) => compareSemver(ver, ev) === 0);
+  }
+
+  // Parse all comparator constraints in this AND-clause (e.g. '> 1.1.1 < 2.0.0' or '>= 18.0.0, < 18.0.2')
+  const regex = /([><]=?|=|~|\^)?\s*([0-9a-zA-Z.-]+)/g;
+  let match: RegExpExecArray | null;
+  let matchesCount = 0;
+
+  while ((match = regex.exec(clause)) !== null) {
+    matchesCount++;
+    const op = match[1] || '=';
     const target = match[2];
     const cmp = compareSemver(ver, target);
+
     if (op === '>' && !(cmp > 0)) return false;
     if (op === '>=' && !(cmp >= 0)) return false;
     if (op === '<' && !(cmp < 0)) return false;
     if (op === '<=' && !(cmp <= 0)) return false;
-    if (op === '=' && !(cmp === 0)) return false;
+    if (op === '=' && cmp !== 0) return false;
   }
-  return true;
+
+  return matchesCount > 0;
 }
 
 function parseGitHubOwnerRepo(urlOrString?: string): { owner: string; repo: string } | null {

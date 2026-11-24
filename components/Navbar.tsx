@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Ecosystem } from '@/lib/types';
-import { Scale, Terminal } from 'lucide-react';
+import { BookOpen, Scale, Terminal } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCompare?: () => void;
@@ -12,9 +12,11 @@ interface NavbarProps {
 
 export function Navbar({ onOpenCompare }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentEcosystem = (searchParams.get('ecosystem') || 'npm').toLowerCase() as Ecosystem;
   const currentPackage = searchParams.get('package');
+  const isDocsPage = pathname === '/docs';
 
   const switchEcosystem = (eco: Ecosystem) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -70,18 +72,36 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
         </button>
       </div>
 
-      {/* Right Quick Actions (Compare & API docs) */}
-      <div className="flex items-center gap-2">
-        {onOpenCompare && (
-          <button
-            type="button"
-            onClick={onOpenCompare}
-            className="flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-full bg-[#f8fafc] hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] px-3 text-[12px] font-semibold text-[#0f172a] hover:text-[#1d53c6] transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.96] shadow-xs"
-          >
-            <Scale className="h-3.5 w-3.5 text-[#1d53c6]" />
-            <span>Compare</span>
-          </button>
-        )}
+      {/* Right Quick Actions (Compare, Docs & External API) */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <Link
+          href="/docs"
+          className={`flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.96] shadow-xs ${
+            isDocsPage
+              ? 'bg-[#1d53c6] text-white border border-[#1d53c6]'
+              : 'bg-[#f8fafc] hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] text-[#0f172a] hover:text-[#1d53c6]'
+          }`}
+          title="MCP Server & Agent Skills Documentation"
+        >
+          <BookOpen className={`h-3.5 w-3.5 ${isDocsPage ? 'text-white' : 'text-[#1d53c6]'}`} />
+          <span>Docs</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (onOpenCompare) {
+              onOpenCompare();
+            } else {
+              router.push(`/?compare=true&ecosystem=${currentEcosystem}`);
+            }
+          }}
+          className="flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-full bg-[#f8fafc] hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] px-3 text-[12px] font-semibold text-[#0f172a] hover:text-[#1d53c6] transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.96] shadow-xs"
+          title="Compare Packages Side-by-Side"
+        >
+          <Scale className="h-3.5 w-3.5 text-[#1d53c6]" />
+          <span>Compare</span>
+        </button>
 
         <Link
           href="https://docs.deps.dev/api/v3/"

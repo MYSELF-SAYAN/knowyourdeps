@@ -13,6 +13,7 @@ import { SecurityTab } from '@/components/tabs/SecurityTab';
 import { EcosystemTab } from '@/components/tabs/EcosystemTab';
 import { HealthTab } from '@/components/tabs/HealthTab';
 import { ComparisonModal } from '@/components/ComparisonModal';
+import { Footer } from '@/components/Footer';
 import { KeycapButton } from '@/components/ui/KeycapButton';
 import {
   ShieldAlert,
@@ -21,6 +22,10 @@ import {
   Shuffle,
   AlertTriangle,
   Terminal,
+  ArrowRight,
+  Check,
+  Copy,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,6 +33,13 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [copiedSkill, setCopiedSkill] = useState(false);
+
+  const copySkillCmd = () => {
+    navigator.clipboard.writeText('npx skills add MYSELF-SAYAN/knowyourdeps');
+    setCopiedSkill(true);
+    setTimeout(() => setCopiedSkill(false), 2000);
+  };
 
   const ecosystem = (searchParams.get('ecosystem') || 'npm').toLowerCase() as Ecosystem;
   const packageName = searchParams.get('package') || '';
@@ -78,6 +90,13 @@ function DashboardContent() {
   }, [ecosystem, packageName]);
 
   const activeVersion = versionParam || packageData?.latestVersion || 'latest';
+
+  // Handle URL compare query param trigger
+  useEffect(() => {
+    if (searchParams.get('compare') === 'true' || searchParams.get('compare') === '1') {
+      openCompareModalDirect();
+    }
+  }, [searchParams]);
 
   const handleSelectTab = (tab: TabType) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -354,32 +373,66 @@ function DashboardContent() {
               ))}
             </div>
 
+            {/* Restrained Anti-Slop AI Agent & MCP Integration Indication */}
+            <div className="mt-12 w-full max-w-2xl bg-white/85 backdrop-blur-xl border border-[#e2e8f0] rounded-[22px] p-5 sm:p-6 shadow-[0_4px_24px_rgba(14,165,233,0.06)] hover:border-[#bfdbfe] transition-all text-left">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-[#f1f5f9]">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-pixel text-[8.5px] uppercase tracking-wider text-emerald-700">
+                    Live MCP Cloud Server Online
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-[#475569] bg-[#f8fafc] px-2.5 py-0.5 rounded-full border border-[#e2e8f0]">
+                  skills.sh ready
+                </span>
+              </div>
+
+              <div className="mt-3.5">
+                <h3 className="text-[15px] font-bold text-[#0f172a] flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-[#1d53c6]" />
+                  <span>Use directly inside Cursor, Claude, Antigravity &amp; VS Code</span>
+                </h3>
+                <p className="mt-1 text-[13px] text-[#64748b] leading-relaxed">
+                  Audit direct and transitive dependencies, check exact semver bounds, and generate compliance reports directly from your AI agent chat.
+                </p>
+              </div>
+
+              {/* Quick CLI copy box & Link to Docs */}
+              <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                <div className="flex-1 flex items-center justify-between bg-[#0f172a] text-[#f8fafc] px-3.5 py-2 rounded-[12px] font-mono text-[12px] border border-[#1e293b] select-all">
+                  <span className="truncate text-[#93c5fd]">
+                    <span className="text-[#64748b] mr-1.5">$</span>npx skills add MYSELF-SAYAN/knowyourdeps
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copySkillCmd}
+                    className="ml-2 p-1 rounded-md text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                    title="Copy install command"
+                  >
+                    {copiedSkill ? (
+                      <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </div>
+
+                <Link
+                  href="/docs"
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-[12px] bg-[#1d53c6] hover:bg-[#19409b] text-white text-[12px] font-semibold transition-all hover:-translate-y-0.5 active:scale-[0.98] shadow-xs shrink-0 cursor-pointer"
+                >
+                  <span>Docs &amp; Setup</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
             {/* Stageshow Interactive Miniature Product Showcase */}
             {/* <LandingProductStage /> */}
           </main>
 
-          {/* Footer on Landing Page */}
-          <footer className="w-full border-t border-[#e2e8f0]/80 bg-white/60 backdrop-blur-md py-6 mt-auto text-[12px] text-[#64748b] relative z-10">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-[16px] text-[#0f172a] tracking-tight">KNOWYOURDEPS</span>
-                <span>•</span>
-                <span>Package intelligence &amp; supply chain audit engine</span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <span className="text-[#64748b]">Zero browser calls to external third-party APIs</span>
-                <span>•</span>
-                <button
-                  type="button"
-                  onClick={openCompareModalDirect}
-                  className="text-[#1d53c6] hover:underline font-medium cursor-pointer"
-                >
-                  Compare Packages
-                </button>
-              </div>
-            </div>
-          </footer>
+          {/* Global Unified Footer */}
+          <Footer onOpenCompare={openCompareModalDirect} />
         </>
       )}
 

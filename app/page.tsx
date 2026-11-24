@@ -137,13 +137,13 @@ function DashboardContent() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-[#f8fafc] text-[#0f172a] relative ${
-        packageName ? 'lg:h-screen lg:overflow-hidden' : ''
-      }`}
+      className={`min-h-screen flex flex-col ${
+        packageName ? 'bg-[#f8fafc] lg:h-screen lg:overflow-hidden' : 'bg-transparent'
+      } text-[#0f172a] relative`}
     >
-      {/* Smokey Sky Atmosphere Aura (tasteskill.dev design system) */}
+      {/* Smokey Sky Atmosphere Aura Spanning Whole Page (tasteskill.dev design system) */}
       {!packageName && (
-        <div className="sky-half-screen-bg">
+        <div className="sky-full-page-bg">
           <div className="sky-clouds-overlay" />
         </div>
       )}
@@ -337,7 +337,7 @@ function DashboardContent() {
         <>
           <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 desk:px-8 pt-20 sm:pt-28 desk:pt-32 pb-32 sm:pb-40 flex flex-col items-center justify-center text-center relative z-10 animate-in fade-in duration-300">
             {/* Pill badge with pulse dot in taste-skill aesthetic */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-[#bfdbfe]/80 text-[#1d53c6] font-pixel text-[9.5px] uppercase tracking-wide mb-8 shadow-[0_2px_12px_rgba(14,165,233,0.12)] select-none hover:-translate-y-0.5 transition-transform">
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-white/80 text-[#1d53c6] font-sans font-semibold text-[11px] uppercase tracking-wider mb-8 shadow-[0_2px_12px_rgba(14,165,233,0.12)] select-none hover:-translate-y-0.5 transition-transform">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1d53c6] shadow-[0_0_8px_#38bdf8]" />
               <span>Package Intelligence &amp; Supply Chain Audit</span>
             </div>
@@ -348,7 +348,7 @@ function DashboardContent() {
             </h1>
 
             {/* Lede sentence with generous breathing space */}
-            <p className="mt-5 text-[15px] sm:text-[17px] text-[#475569] max-w-xl mx-auto leading-relaxed">
+            <p className="mt-5 text-[15px] sm:text-[17px] text-[#334155] max-w-xl mx-auto leading-relaxed">
               Real-time vulnerability audits, supply chain dependency solver, download velocity trends, and OpenSSF scorecards across npm &amp; PyPI.
             </p>
 
@@ -357,16 +357,16 @@ function DashboardContent() {
               <SearchBar inputRef={searchInputRef} />
             </div>
 
-            {/* Popular packages quick pills with pixel label */}
+            {/* Popular packages quick pills with refined sans label */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-2xl text-[12px]">
-              <span className="font-pixel text-[9px] text-[#64748b] uppercase tracking-wider mr-1">
+              <span className="font-sans font-semibold text-[11px] text-[#475569] uppercase tracking-wider mr-1">
                 Trending {ecosystem.toUpperCase()}:
               </span>
               {POPULAR_PACKAGES[ecosystem].map((pkg) => (
                 <Link
                   key={pkg}
                   href={`/?ecosystem=${ecosystem}&package=${pkg}&type=overview`}
-                  className="font-mono bg-white/80 backdrop-blur-sm border border-[#e2e8f0] hover:border-[#38bdf8] hover:text-[#1d53c6] hover:bg-[#eff6ff] px-3.5 py-1 rounded-full text-[#334155] transition-all duration-180 hover:-translate-y-0.5 hover:shadow-xs active:scale-[0.96]"
+                  className="font-mono bg-white/85 backdrop-blur-sm border border-white/80 hover:border-[#38bdf8] hover:text-[#1d53c6] hover:bg-white px-3.5 py-1 rounded-full text-[#334155] transition-all duration-180 hover:-translate-y-0.5 hover:shadow-xs active:scale-[0.96]"
                 >
                   {pkg}
                 </Link>
@@ -374,15 +374,15 @@ function DashboardContent() {
             </div>
 
             {/* Restrained Anti-Slop AI Agent & MCP Integration Indication */}
-            <div className="mt-12 w-full max-w-2xl bg-white/85 backdrop-blur-xl border border-[#e2e8f0] rounded-[22px] p-5 sm:p-6 shadow-[0_4px_24px_rgba(14,165,233,0.06)] hover:border-[#bfdbfe] transition-all text-left">
+            <div className="mt-12 w-full max-w-2xl bg-white/85 backdrop-blur-xl border border-white/80 rounded-[22px] p-5 sm:p-6 shadow-[0_8px_32px_rgba(14,165,233,0.12)] hover:border-[#bfdbfe] transition-all text-left">
               <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-[#f1f5f9]">
                 <div className="flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-pixel text-[8.5px] uppercase tracking-wider text-emerald-700">
+                  <span className="font-sans font-bold text-[11px] uppercase tracking-wider text-emerald-700">
                     Live MCP Cloud Server Online
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-[#475569] bg-[#f8fafc] px-2.5 py-0.5 rounded-full border border-[#e2e8f0]">
+                <span className="text-[11px] font-mono font-medium text-[#475569] bg-[#f8fafc] px-2.5 py-0.5 rounded-full border border-[#e2e8f0]">
                   skills.sh ready
                 </span>
               </div>

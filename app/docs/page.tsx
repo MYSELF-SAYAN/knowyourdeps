@@ -108,12 +108,13 @@ function DocsContent() {
       id: 'antigravity',
       name: 'Google Antigravity & Gemini CLI',
       file: '~/.gemini/config/mcp_config.json',
-      desc: 'Add to global ~/.gemini/config/mcp_config.json or project workspace.',
+      desc: 'Connects via mcp-remote bridge for Antigravity stdio transport.',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              url: MCP_ENDPOINT,
+              command: 'npx',
+              args: ['-y', 'mcp-remote', MCP_ENDPOINT],
             },
           },
         },
@@ -197,16 +198,15 @@ function DocsContent() {
               Run this in your project terminal. It auto-detects Cursor, Claude Code, Antigravity, or VS Code and sets up the skill instructions:
             </p>
 
-            <div className="bg-[#0f172a] rounded-[14px] p-3.5 sm:p-4 border border-[#1e293b] text-[#f8fafc] shadow-lg">
-              <div className="flex items-center justify-between gap-3 text-[12.5px]">
-                <div className="font-mono text-[#93c5fd] truncate select-all">
-                  <span className="text-[#64748b] mr-2 select-none">$</span>
-                  {SKILL_CMD}
-                </div>
+            <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-lg text-[#f8fafc]">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
+                <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
+                  Terminal
+                </span>
                 <button
                   type="button"
                   onClick={() => copyCode('skill-cmd', SKILL_CMD)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white text-[11px] font-mono transition-colors cursor-pointer shrink-0 select-none"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
                 >
                   {copiedId === 'skill-cmd' ? (
                     <>
@@ -220,6 +220,10 @@ function DocsContent() {
                     </>
                   )}
                 </button>
+              </div>
+              <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] select-all">
+                <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
+                {SKILL_CMD}
               </div>
             </div>
           </section>
@@ -235,17 +239,17 @@ function DocsContent() {
               </h2>
             </div>
             <p className="text-[13.5px] text-[#475569]">
-              Copy this prompt into your coding agent:
+              Copy this into your coding agent:
             </p>
 
             {/* Primary Prompt Card */}
-            <div className="bg-[#0f172a] border border-[#1e293b] rounded-[16px] overflow-hidden shadow-xl text-white">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#1e293b]/70 border-b border-[#334155]/60">
+            <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-xl text-white">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
                 <div className="flex items-center gap-2 select-none">
-                  <span className="text-[#64748b] font-mono tracking-widest text-[13px]">
+                  <span className="text-[#64748b] text-[12px] tracking-[3px] select-none">
                     •••
                   </span>
-                  <span className="text-[12px] font-mono text-[#94a3b8] font-medium">
+                  <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
                     Your coding agent
                   </span>
                 </div>
@@ -253,7 +257,7 @@ function DocsContent() {
                 <button
                   type="button"
                   onClick={() => copyCode('agent-prompt', AGENT_PROMPT)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-mono text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
                 >
                   {copiedId === 'agent-prompt' ? (
                     <>
@@ -269,7 +273,7 @@ function DocsContent() {
                 </button>
               </div>
 
-              <div className="p-4 sm:p-5 font-mono text-[13px] sm:text-[13.5px] leading-relaxed text-[#f8fafc] select-all">
+              <div className="p-4 sm:p-5 font-mono text-[13px] sm:text-[13.5px] leading-relaxed text-[#f1f5f9] select-all">
                 <span className="text-[#64748b] select-none font-bold mr-2">&gt;</span>
                 <span>{AGENT_PROMPT}</span>
                 <span className="inline-block w-2.5 h-4.5 bg-[#38bdf8] ml-1.5 align-middle animate-pulse" />
@@ -281,25 +285,25 @@ function DocsContent() {
               <button
                 type="button"
                 onClick={() => setIsManualOpen(!isManualOpen)}
-                className="flex items-center gap-1.5 text-[13.5px] font-medium text-[#1d53c6] hover:text-[#19409b] transition-colors cursor-pointer select-none py-1 group"
+                className="flex items-center gap-2 text-[13.5px] font-medium text-[#64748b] hover:text-[#0f172a] transition-colors cursor-pointer select-none py-1 group"
               >
-                <span className="text-[11px] text-[#1d53c6] transition-transform duration-150">
+                <span className="text-[10px] text-[#64748b] group-hover:text-[#0f172a] transition-transform duration-150">
                   {isManualOpen ? '▼' : '▶'}
                 </span>
-                <span className="group-hover:underline">Or run setup yourself</span>
+                <span>Or run setup yourself</span>
               </button>
 
               {isManualOpen && (
                 <div className="mt-3.5 space-y-5 pl-1 sm:pl-3 border-l-2 border-[#bfdbfe]/60 transition-all">
-                  <div className="bg-[#0f172a] border border-[#1e293b] rounded-[14px] overflow-hidden shadow-md">
-                    <div className="flex items-center justify-between px-4 py-2 bg-[#1e293b]/60 border-b border-[#334155]/60">
-                      <span className="text-[12px] font-mono text-[#94a3b8] font-medium">
+                  <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-md">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
+                      <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
                         Terminal
                       </span>
                       <button
                         type="button"
                         onClick={() => copyCode('terminal-cmd', SKILL_CMD)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11.5px] font-mono text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
                       >
                         {copiedId === 'terminal-cmd' ? (
                           <>
@@ -314,7 +318,7 @@ function DocsContent() {
                         )}
                       </button>
                     </div>
-                    <div className="p-3.5 sm:p-4 font-mono text-[13px] text-[#93c5fd] select-all">
+                    <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] select-all">
                       {SKILL_CMD}
                     </div>
                   </div>
@@ -323,29 +327,31 @@ function DocsContent() {
                     For one specific client, add its configuration:
                   </div>
 
-                  <div className="space-y-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {AGENTS.map((agent) => (
                       <div
                         key={agent.id}
-                        className="bg-white/95 rounded-[16px] border border-[#e2e8f0] p-4 sm:p-5 shadow-xs space-y-2.5"
+                        className="bg-white/95 rounded-[16px] border border-[#e2e8f0] p-4 shadow-xs space-y-2.5 flex flex-col justify-between"
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-semibold text-[13.5px] text-[#0f172a]">
-                            {agent.name}
-                          </span>
-                          <span className="font-mono text-[11px] text-[#1d53c6] bg-[#eff6ff] px-2.5 py-0.5 rounded-md border border-[#bfdbfe]/60 font-semibold">
-                            {agent.file}
-                          </span>
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-[13.5px] text-[#0f172a]">
+                              {agent.name}
+                            </span>
+                            <span className="font-mono text-[10.5px] text-[#1d53c6] bg-[#eff6ff] px-2 py-0.5 rounded-md border border-[#bfdbfe]/60 font-semibold truncate max-w-[170px]" title={agent.file}>
+                              {agent.file}
+                            </span>
+                          </div>
+                          <div className="text-[11.5px] text-[#64748b] mt-1 leading-snug">{agent.desc}</div>
                         </div>
-                        <div className="text-[12px] text-[#64748b]">{agent.desc}</div>
 
-                        <div className="bg-[#0f172a] rounded-[12px] p-3 border border-[#1e293b] text-[#f8fafc]">
-                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#1e293b] text-[11px] text-[#94a3b8]">
-                            <span className="font-mono">JSON Configuration</span>
+                        <div className="bg-[#0b0f19] rounded-[10px] p-2.5 border border-[#1e293b]/70 text-[#f8fafc]">
+                          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#1e293b] text-[11px] text-[#94a3b8]">
+                            <span className="font-mono text-[10.5px]">JSON Config</span>
                             <button
                               type="button"
                               onClick={() => copyCode(agent.id, agent.config)}
-                              className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-white text-[11px] font-mono transition-colors cursor-pointer select-none"
+                              className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-white text-[10.5px] font-sans transition-colors cursor-pointer select-none"
                             >
                               {copiedId === agent.id ? (
                                 <>
@@ -360,7 +366,7 @@ function DocsContent() {
                               )}
                             </button>
                           </div>
-                          <pre className="font-mono text-[12px] text-[#93c5fd] overflow-x-auto leading-relaxed select-all">
+                          <pre className="font-mono text-[11px] text-[#93c5fd] overflow-x-auto leading-relaxed select-all">
                             <code>{agent.config}</code>
                           </pre>
                         </div>

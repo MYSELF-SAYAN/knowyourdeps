@@ -8,7 +8,7 @@ description: >-
   deps.dev v3, NVD, and GitHub Advisories with exact semver bounds. Use whenever asked to audit
   dependencies, check for vulnerabilities, inspect a lockfile or manifest, or produce compliance reports.
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # KnowYourDeps Vulnerability Audit & Compliance Skill
@@ -43,11 +43,24 @@ Activate this skill when:
 
 Connect to the live KnowYourDeps MCP cloud endpoint (zero local Python dependencies needed):
 
+- **Streamable HTTP (Antigravity / modern clients once `/mcp` is deployed):**
 ```json
 {
   "mcpServers": {
     "knowyourdeps": {
-      "url": "https://knowyourdeps-mcp.onrender.com/sse"
+      "url": "https://knowyourdeps-mcp.onrender.com/mcp"
+    }
+  }
+}
+```
+
+- **Legacy SSE via `mcp-remote` stdio bridge (works for Antigravity, Cursor, and Claude Desktop):**
+```json
+{
+  "mcpServers": {
+    "knowyourdeps": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://knowyourdeps-mcp.onrender.com/sse"]
     }
   }
 }
@@ -168,32 +181,43 @@ When the user specifies an individual package and version directly in chat (e.g.
 
 Inspect the workspace to find relevant manifest files:
 
-- **Python (PyPI):** `requirements.txt`, `requirements-dev.txt`, `pyproject.toml`, `Pipfile`
+- **Python (PyPI):** `requirements.txt`, `requirements-dev.txt`, `pyproject.toml`, `uv.lock`, `poetry.lock`
 - **Node.js (npm):** `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`
 
 ### Step 2: Parse Manifests & Lockfiles
 
-#### For npm Projects:
+> **Remote Cloud MCP Rule:** Always read the file locally in your agent environment and pass its text or JSON object via **`content`** (remote MCP servers cannot access your local disk via `file_path`). Use `file_path` only when running a local `stdio` server (`uvx knowyourdeps-mcp`).
+
+#### For npm Projects (`package-lock.json` or `package.json`):
 When `package-lock.json` is present, **always parse `package-lock.json`** with `max_depth: -1` so that **each and every package (direct and transitive)** is included in the scan:
 ```json
 {
-  "file_path": "/absolute/path/to/package-lock.json",
+  "content": "<raw JSON string or parsed JSON object of package-lock.json>",
   "max_depth": -1
 }
 ```
 If only `package.json` is available, parse `package.json` with `include_dev: true`:
 ```json
 {
-  "file_path": "/absolute/path/to/package.json",
+  "content": "<raw JSON string or parsed JSON object of package.json>",
   "include_dev": true
 }
 ```
 
-#### For Python Projects:
+#### For Python Projects (`requirements.txt`):
 Parse `requirements.txt`:
 ```json
 {
-  "file_path": "/absolute/path/to/requirements.txt"
+  "content": "<raw text content of requirements.txt>"
+}
+```
+
+#### For Any Other Manifest or Lockfile (`pyproject.toml`, `uv.lock`, `poetry.lock`, `yarn.lock`, `pnpm-lock.yaml`):
+Call the unified auto-detect parser `parse_manifest`:
+```json
+{
+  "content": "<raw file text or JSON object>",
+  "filename": "pyproject.toml"
 }
 ```
 
@@ -252,7 +276,7 @@ For each vulnerable package:
 
 ### Step 5: Generate Compliance Deliverables in `output/`
 
-Always produce **both** deliverables inside the **`output/`** folder:
+Always ensure **both** deliverables exist locally inside the project's **`output/`** folder. When using a remote MCP server, write the returned `content` string directly to local `output/vulnerability-report.md` and `output/vulnerability-report.csv`.
 
 #### 1. Markdown Report (`output/vulnerability-report.md`)
 Call `generate_vulnerability_report_md`:

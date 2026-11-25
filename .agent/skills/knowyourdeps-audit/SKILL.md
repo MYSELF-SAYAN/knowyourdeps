@@ -8,22 +8,23 @@ description: >-
   deps.dev v3, NVD, and GitHub Advisories with exact semver bounds. Use whenever asked to audit
   dependencies, check for vulnerabilities, inspect a lockfile or manifest, or produce compliance reports.
 metadata:
-  version: 1.5.0
+  version: 1.6.0
 ---
 
 # KnowYourDeps Vulnerability Audit & Compliance Skill
 
-This skill instructs AI agents on how to execute end-to-end dependency security audits using the **KnowYourDeps MCP Server** (FastAPI-powered) or fallback security APIs.
+This skill instructs AI agents on how to execute end-to-end dependency security audits and non-breaking remediation planning using the **KnowYourDeps MCP Server** (FastAPI-powered) or fallback security APIs.
 
 It standardizes the workflow for:
 1. Asking the user clarifying questions to align on **audit scope** (full project vs. single manifest vs. single package) and **report inclusion** (all packages vs. CVEs only)
 2. Auditing **single packages and versions** on-demand without needing manifest files
-3. Discovering and parsing dependency manifests (`requirements.txt`, `package.json`, `package-lock.json`)
-4. Auditing **each and every package** in `package.json` and `package-lock.json` (all direct, dev, and transitive dependencies)
+3. Discovering and parsing dependency manifests (`requirements.txt`, `pyproject.toml`, `uv.lock`, `poetry.lock`, `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
+4. Auditing **each and every package** (all direct, dev, and transitive dependencies)
 5. For `requirements.txt`, resolving and auditing all installed dependent packages (transitive dependencies)
 6. Determining actual version impact with exact semver range evaluation (filtering out false positives)
-7. Generating dual compliance deliverables inside the **`output/`** folder: `output/vulnerability-report.md` and `output/vulnerability-report.csv`
-8. Formulating immediate CLI fix guidance and suggesting verified modern alternatives
+7. Resolving **conflict-free, CVE-free upgrade plans** (`get_upgrade_plan`, `resolve_safe_upgrade`, `simulate_upgrade_impact`) that solve transitive breakage chains without breaking sibling consumers or introducing new CVEs
+8. Generating dual compliance deliverables inside the **`output/`** folder: `output/vulnerability-report.md` and `output/vulnerability-report.csv` via `script/save_reports.py`
+9. Formulating immediate CLI fix guidance and suggesting verified compatible modern alternatives
 
 ---
 
@@ -129,8 +130,10 @@ Before executing a scan or generating deliverables, the agent **MUST** check whe
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
-│ 4. ENRICHMENT   Call suggest_alternatives for vulnerable    │
-│                 dependencies; call get_fix_guidance         │
+│ 4. REMEDIATION  Call get_upgrade_plan (or resolve_safe_     │
+│                 upgrade + simulate_upgrade_impact) for      │
+│                 non-breaking upgrades; call suggest_        │
+│                 alternatives & get_fix_guidance             │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
@@ -169,8 +172,9 @@ When the user specifies an individual package and version directly in chat (e.g.
    }
    ```
 3. If vulnerabilities exist (`status == "vulnerable"`):
-   - Call `get_fix_guidance` to retrieve upgrade commands.
-   - Call `suggest_alternatives` to retrieve modern replacement packages.
+   - Call `resolve_safe_upgrade` to find the highest CVE-free compatible version (pass `installed_packages` if checking alongside sibling packages).
+   - Call `get_fix_guidance` to retrieve exact upgrade commands and compatibility notes.
+   - Call `suggest_alternatives` to retrieve CVE-verified modern replacement packages.
 4. Report status, CVE identifiers, CVSS scores, affected ranges, and exact fix commands immediately in chat.
 
 ---
@@ -249,28 +253,43 @@ Call `scan_vulnerabilities` with all parsed packages:
 
 ---
 
-### Step 4: Enrich with Alternatives & Fix Guidance
+### Step 4: Non-Breaking Upgrade Planning, Alternatives & Fix Guidance
 
-For each vulnerable package:
-1. **Fetch fix command:**
-   Call `get_fix_guidance`:
+When one or more vulnerable packages are found, prefer **non-breaking graph resolution** over blind single-package version bumps so upgrading Package A does not break Package B or introduce vulnerable transitive dependencies:
+
+1. **Generate a complete non-breaking upgrade plan (Recommended for manifests/lockfiles):**
+   Call `get_upgrade_plan` with the `scan_result` and lockfile/manifest contents:
    ```json
    {
-     "package_name": "marked",
-     "current_version": "18.2.1",
-     "ecosystem": "npm",
-     "vulnerability_id": "GHSA-6v9c-7cg6-27q7"
+     "scan_result": "<scan_result_data>",
+     "lockfile_content": "<raw lockfile string or JSON object>",
+     "manifest_content": "<optional package.json / requirements.txt / pyproject.toml content>",
+     "strategy": "conservative"
    }
    ```
-2. **Fetch modern alternatives:**
-   Call `suggest_alternatives`:
-   ```json
-   {
-     "name": "lodash",
-     "ecosystem": "npm",
-     "limit": 3
-   }
-   ```
+   - `strategy`: `"conservative"` (smallest safe compatible bump, default), `"aggressive"` (latest compatible CVE-free release), or `"minimal"` (`CRITICAL`/`HIGH` advisories only).
+   - Returns ordered `steps` (leaf dependencies before consumers), a `combined_upgrade_command`, per-step `rollback_command`, and vetted `alternatives` under `unresolvable` if no compatible patch exists.
+2. **Resolve or preview an individual package upgrade safely:**
+   - Call `resolve_safe_upgrade` to find the highest CVE-free version compatible with all consumers in the graph.
+   - Call `simulate_upgrade_impact` before bumping a version manually to inspect `broken_consumers`, `broken_dependencies`, `new_transitive_deps`, `new_cves_introduced`, and `cascading_chain` (`A -> B -> C`).
+3. **Fetch fix guidance & compatible alternatives:**
+   - Call `get_fix_guidance` (optionally passing `installed_packages` for compatibility verification):
+     ```json
+     {
+       "package_name": "marked",
+       "current_version": "18.2.1",
+       "ecosystem": "npm",
+       "vulnerability_id": "GHSA-6v9c-7cg6-27q7"
+     }
+     ```
+   - Call `suggest_alternatives` (optionally passing `installed_packages` so returned replacements verify `compatible_with_project` and OSV `security_status`):
+     ```json
+     {
+       "name": "lodash",
+       "ecosystem": "npm",
+       "limit": 3
+     }
+     ```
 
 ---
 

@@ -8,7 +8,7 @@ description: >-
   deps.dev v3, NVD, and GitHub Advisories with exact semver bounds. Use whenever asked to audit
   dependencies, check for vulnerabilities, inspect a lockfile or manifest, or produce compliance reports.
 metadata:
-  version: 1.4.0
+  version: 1.5.0
 ---
 
 # KnowYourDeps Vulnerability Audit & Compliance Skill
@@ -274,11 +274,13 @@ For each vulnerable package:
 
 ---
 
-### Step 5: Generate Compliance Deliverables in `output/`
+### Step 5: Generate and Persist Compliance Deliverables in `./output`
 
-Always ensure **both** deliverables exist locally inside the project's **`output/`** folder. When using a remote MCP server, write the returned `content` string directly to local `output/vulnerability-report.md` and `output/vulnerability-report.csv`.
+Always generate **both** deliverables and persist them into **`./output/` in the user's current working directory** using the bundled helper script **`script/save_reports.py`** included with this skill.
 
-#### 1. Markdown Report (`output/vulnerability-report.md`)
+> **Why `script/save_reports.py` is mandatory:** Calling `generate_vulnerability_report_md` or `generate_vulnerability_report_csv` on a remote cloud MCP server only writes inside the server's ephemeral container and returns `"file_path": "output/..."` alongside the rendered `content` string — it does **not** create `./output` on the user's local machine. Running `script/save_reports.py` checks whether `./output` exists in the current working directory, creates it if missing, writes both reports cleanly (preserving UTF-8 BOM on CSV), and **replaces any existing `vulnerability-report.md` / `vulnerability-report.csv`** on every re-audit so reports always stay up-to-date.
+
+#### 1. Generate Markdown Report Content
 Call `generate_vulnerability_report_md`:
 ```json
 {
@@ -290,7 +292,7 @@ Call `generate_vulnerability_report_md`:
 ```
 *(Pass `include_clean_packages: false` if the user opted for a compact, CVE-only report).*
 
-#### 2. CSV Report (`output/vulnerability-report.csv`)
+#### 2. Generate CSV Report Content
 Call `generate_vulnerability_report_csv`:
 ```json
 {
@@ -300,6 +302,25 @@ Call `generate_vulnerability_report_csv`:
 }
 ```
 *(Pass `include_clean_packages: false` if the user wants only vulnerable packages in the CSV/Excel sheet).*
+
+#### 3. Save & Replace Reports in Local `./output/` via `script/save_reports.py`
+From the project's current working directory, locate `script/save_reports.py` inside this skill folder (for example `.agent/skills/knowyourdeps-audit/script/save_reports.py`, `.agents/skills/knowyourdeps-audit/script/save_reports.py`, `.claude/skills/knowyourdeps-audit/script/save_reports.py`, `skills/knowyourdeps-audit/script/save_reports.py`, or `~/.agents/skills/knowyourdeps-audit/script/save_reports.py`) and run it with Python 3 using the returned `content` payloads (replacing any prior report files cleanly):
+
+```bash
+# Option A: Pass JSON file or piped stdin containing returned md/csv content strings (use python on Windows if python3 is unavailable)
+python3 "<skill-dir>/script/save_reports.py" --json "<temp-reports.json>"
+```
+
+Where `<temp-reports.json>` (or piped stdin) contains:
+```json
+{
+  "md": "<markdown ReportOutput.content>",
+  "csv": "<csv ReportOutput.content>"
+}
+```
+*(Or pass flags directly: `--md-content "<...>" --csv-content "<...>"` or `--md-file ... --csv-file ...`. Clean up any temporary JSON file after `save_reports.py` exits 0.)*
+
+If Python 3 is unavailable in the environment, ensure `./output` exists and write `output/vulnerability-report.md` (UTF-8) and `output/vulnerability-report.csv` (UTF-8 with `\ufeff` BOM) directly, replacing any existing files.
 
 ---
 
@@ -416,7 +437,7 @@ package_name,version,ecosystem,dependency_group,status,vulnerability_id,cve_id,g
 | **Unbounded / Canary Ranges** | When an advisory has `last_affected` or canary versions (e.g. `16.0.0-beta.0`), do not flag production releases beyond the fixed version. Match using `<= last_affected`. |
 | **All Transitive Packages** | For complete audits, `package-lock.json` must be traversed completely. All direct and transitive packages must be included. |
 | **Python Dependent Packages** | When auditing `requirements.txt`, pass `include_transitive: true` to resolve and audit all dependent packages. |
-| **Output Directory** | Always save reports into the `output/` folder (`output/vulnerability-report.md` and `output/vulnerability-report.csv`), creating the folder if it does not exist. |
+| **Output Directory** | Always run `script/save_reports.py` from the current working directory so `./output/` is created if missing and existing `vulnerability-report.md` / `vulnerability-report.csv` files are replaced on every new audit. |
 | **Private / Internal Packages** | If a package is not found in public registries (returns 404), mark status as `UNREGISTERED_OR_PRIVATE` and proceed without failing the whole audit. |
 | **No API Key Available** | OSV.dev and deps.dev require NO keys. If NVD is rate-limited (HTTP 429), fall back smoothly to OSV severity ratings and continue. |
 
@@ -424,7 +445,7 @@ package_name,version,ecosystem,dependency_group,status,vulnerability_id,cve_id,g
 
 ## 9. Delivery Summary in Chat
 
-After completing the audit and saving both reports in `output/`, provide a concise 3-part chat summary:
+After completing the audit and confirming `./output/vulnerability-report.md` and `./output/vulnerability-report.csv` exist in the current working directory via `script/save_reports.py`, provide a concise 3-part chat summary:
 
 1. **The Numbers:** Total packages scanned (direct + transitive), clean count, vulnerable count, breakdown of Critical/High/Medium/Low.
 2. **Top Priority Action Items:** The 1 to 3 most severe vulnerabilities with copy-pasteable fix commands (`npm install ...` or `pip install ...`).

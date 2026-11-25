@@ -37,7 +37,7 @@ function getCurvedPath(pts: { x: number; y: number }[]): string {
   return d;
 }
 
-export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }: DownloadChartProps) {
+export function DownloadChart({ data: rawData, color = '#087cf8', height = 280 }: DownloadChartProps) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [isSmoothed, setIsSmoothed] = useState<boolean>(true);
   const [rangeFilter, setRangeFilter] = useState<'30d' | '90d' | '180d' | '365d' | 'all' | 'custom'>('all');
@@ -140,8 +140,8 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
 
   if (!displayData || displayData.length === 0) {
     return (
-      <div className="flex h-[280px] w-full flex-col items-center justify-center rounded-[20px] border border-dashed border-[#e8e8e8] bg-white text-[13px] text-[#555a64]">
-        <Activity className="h-6 w-6 text-[#a6a6a6] mb-2" />
+      <div className="flex h-[280px] w-full flex-col items-center justify-center rounded-[20px] border border-dashed border-[#dce7f5] bg-white text-[13px] text-[#475569]">
+        <Activity className="h-6 w-6 text-[#64748b] mb-2" />
         <span>No download telemetry available for this period.</span>
       </div>
     );
@@ -199,22 +199,22 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
   };
 
   return (
-    <div className="relative w-full rounded-[20px] border border-[#e8e8e8] bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden transition-all duration-200">
-      {/* Chart Header: Pixelated Headings + Controls */}
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[#f0f0f0] pb-4">
+    <div className="relative w-full rounded-[20px] border border-white/90 bg-white/92 backdrop-blur-xl p-5 sm:p-6 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] overflow-hidden transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-200">
+      {/* Chart Header: Display Headings + Controls */}
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[#e8eef7] pb-4">
         {/* Metric Callout */}
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-pixel text-[9px] uppercase tracking-wider text-[#555a64]">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
               {isSmoothed ? '7-Day Avg Velocity' : 'Daily Downloads'}
             </span>
             {isSmoothed && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#eff6ff] text-[#1d53c6] text-[10px] font-semibold border border-[#bfdbfe]">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#eff6ff] text-[#0558d6] text-[10px] font-semibold border border-[#bfdbfe]">
                 <Sparkles className="h-2.5 w-2.5" /> Smoothed
               </span>
             )}
           </div>
-          <div className="mt-1 font-display text-[32px] sm:text-[40px] font-bold text-[#1a1a1a] tracking-tight tabular-nums leading-none">
+          <div className="mt-1 font-display text-[32px] sm:text-[40px] font-bold text-[#0f172a] tracking-tight tabular-nums leading-none">
             {activePoint ? activePoint.downloads.toLocaleString() : '—'}
           </div>
         </div>
@@ -222,9 +222,9 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
         {/* Date & Range Switches */}
         <div className="flex flex-col sm:items-end gap-2">
           {/* Active Date readout */}
-          <div className="flex items-center gap-1.5 text-[12px] text-[#555a64]">
+          <div className="flex items-center gap-1.5 text-[12px] text-[#475569]">
             <Calendar className="h-3.5 w-3.5" />
-            <span className="font-mono font-medium text-[#1a1a1a]">
+            <span className="font-mono font-medium text-[#0f172a]">
               {activePoint ? activePoint.date : '—'}
             </span>
           </div>
@@ -232,14 +232,14 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
           {/* Controls: Smoothing toggle + Range selector */}
           <div className="flex items-center gap-2">
             {/* Smooth / Raw Toggle */}
-            <div className="flex items-center rounded-[8px] bg-[#f4f4f4] p-0.5 border border-[#e8e8e8]">
+            <div className="flex items-center rounded-[8px] bg-[#f1f6fd] p-0.5 border border-[#dce7f5]">
               <button
                 type="button"
                 onClick={() => setIsSmoothed(true)}
-                className={`px-2 py-1 text-[11px] font-semibold rounded-[6px] transition-all cursor-pointer ${
+                className={`px-2 py-1 text-[11px] font-semibold rounded-[6px] transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer ${
                   isSmoothed
-                    ? 'bg-white text-[#1d53c6] shadow-xs'
-                    : 'text-[#555a64] hover:text-[#1a1a1a]'
+                    ? 'bg-white text-[#0558d6] shadow-xs'
+                    : 'text-[#475569] hover:text-[#0f172a]'
                 }`}
               >
                 Smooth
@@ -247,10 +247,10 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
               <button
                 type="button"
                 onClick={() => setIsSmoothed(false)}
-                className={`px-2 py-1 text-[11px] font-semibold rounded-[6px] transition-all cursor-pointer ${
+                className={`px-2 py-1 text-[11px] font-semibold rounded-[6px] transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer ${
                   !isSmoothed
-                    ? 'bg-white text-[#1d53c6] shadow-xs'
-                    : 'text-[#555a64] hover:text-[#1a1a1a]'
+                    ? 'bg-white text-[#0558d6] shadow-xs'
+                    : 'text-[#475569] hover:text-[#0f172a]'
                 }`}
               >
                 Raw
@@ -258,16 +258,16 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
             </div>
 
             {/* Range filters & Custom Date Selector */}
-            <div className="flex items-center rounded-[8px] bg-[#f4f4f4] p-0.5 border border-[#e8e8e8]">
+            <div className="flex items-center rounded-[8px] bg-[#f1f6fd] p-0.5 border border-[#dce7f5]">
               {(['30d', '90d', '180d', '365d', 'all'] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRangeFilter(r)}
-                  className={`px-2 py-1 text-[11px] font-semibold uppercase rounded-[6px] transition-all cursor-pointer ${
+                  className={`px-2 py-1 text-[11px] font-semibold uppercase rounded-[6px] transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer ${
                     rangeFilter === r
-                      ? 'bg-white text-[#1d53c6] shadow-xs'
-                      : 'text-[#555a64] hover:text-[#1a1a1a]'
+                      ? 'bg-white text-[#0558d6] shadow-xs'
+                      : 'text-[#475569] hover:text-[#0f172a]'
                   }`}
                 >
                   {r === '365d' ? '1Y' : r}
@@ -276,10 +276,10 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
               <button
                 type="button"
                 onClick={() => setRangeFilter('custom')}
-                className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-[6px] transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-[6px] transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer ${
                   rangeFilter === 'custom'
-                    ? 'bg-white text-[#1d53c6] shadow-xs'
-                    : 'text-[#555a64] hover:text-[#1a1a1a]'
+                    ? 'bg-white text-[#0558d6] shadow-xs'
+                    : 'text-[#475569] hover:text-[#0f172a]'
                 }`}
               >
                 <Calendar className="h-3 w-3" />
@@ -292,9 +292,9 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
 
       {/* Flexible Custom Date Range Bar (When Custom is Selected) */}
       {rangeFilter === 'custom' && (
-        <div className="mb-4 p-3 bg-[#eff6ff]/70 border border-[#bfdbfe] rounded-[14px] flex flex-wrap items-center justify-between gap-3 text-[12px] animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="mb-4 p-3 bg-[#eff6ff]/80 border border-[#bfdbfe] rounded-[14px] flex flex-wrap items-center justify-between gap-3 text-[12px]">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="font-semibold text-[#1d53c6] flex items-center gap-1.5">
+            <span className="font-semibold text-[#0558d6] flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" /> Date Range:
             </span>
             <div className="flex items-center gap-2">
@@ -305,7 +305,7 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                 max={customEndDate || maxAvailableDate}
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-2.5 py-1 text-[11.5px] font-mono bg-white border border-[#bfdbfe] rounded-[8px] text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#1d53c6]/20 cursor-pointer"
+                className="px-2.5 py-1 text-[11.5px] font-mono bg-white border border-[#bfdbfe] rounded-[8px] text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#0558d6]/20 cursor-pointer"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -316,13 +316,13 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                 max={maxAvailableDate}
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-2.5 py-1 text-[11.5px] font-mono bg-white border border-[#bfdbfe] rounded-[8px] text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#1d53c6]/20 cursor-pointer"
+                className="px-2.5 py-1 text-[11.5px] font-mono bg-white border border-[#bfdbfe] rounded-[8px] text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#0558d6]/20 cursor-pointer"
               />
             </div>
           </div>
 
           {/* Sliced Timeline Range Metrics */}
-          <div className="flex items-center gap-3 text-[12px] font-medium text-[#1d53c6]">
+          <div className="flex items-center gap-3 text-[12px] font-medium text-[#0558d6]">
             <span>
               <strong>{rangeStats.total.toLocaleString()}</strong> total downloads
             </span>
@@ -364,7 +364,7 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                   y1={y}
                   x2={width - padding.right}
                   y2={y}
-                  stroke="#f0f0f0"
+                  stroke="#e8eef7"
                   strokeWidth="1"
                   strokeDasharray="4 4"
                 />
@@ -372,7 +372,7 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                   x={padding.left - 8}
                   y={y + 4}
                   textAnchor="end"
-                  className="fill-[#a6a6a6] font-mono text-[11px]"
+                  className="fill-[#64748b] font-mono text-[11px]"
                 >
                   {formatNumber(val)}
                 </text>
@@ -395,7 +395,7 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
 
           {/* Active Hover Guideline and Pulsating Indicator */}
           {activePoint && (
-            <g className="transition-all duration-75 pointer-events-none">
+            <g className="transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-75 pointer-events-none">
               {/* Vertical dashed guideline */}
               <line
                 x1={activePoint.x}
@@ -408,14 +408,13 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                 opacity="0.75"
               />
 
-              {/* Pulsating Radar Halo */}
+              {/* Soft Hover Halo */}
               <circle
                 cx={activePoint.x}
                 cy={activePoint.y}
                 r="9"
                 fill={color}
-                opacity="0.2"
-                className="animate-ping"
+                opacity="0.16"
               />
 
               {/* Outer white core */}
@@ -436,15 +435,15 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
 
           {/* Date Axis Labels */}
           {points.length > 0 && (
-            <g className="text-[#a6a6a6] font-mono text-[11px]">
-              <text x={points[0].x} y={height - 10} textAnchor="start" className="fill-[#a6a6a6]">
+            <g className="text-[#64748b] font-mono text-[11px]">
+              <text x={points[0].x} y={height - 10} textAnchor="start" className="fill-[#64748b]">
                 {points[0].date}
               </text>
               <text
                 x={points[Math.floor(points.length / 2)].x}
                 y={height - 10}
                 textAnchor="middle"
-                className="fill-[#a6a6a6]"
+                className="fill-[#64748b]"
               >
                 {points[Math.floor(points.length / 2)].date}
               </text>
@@ -452,7 +451,7 @@ export function DownloadChart({ data: rawData, color = '#1d53c6', height = 280 }
                 x={points[points.length - 1].x}
                 y={height - 10}
                 textAnchor="end"
-                className="fill-[#a6a6a6]"
+                className="fill-[#64748b]"
               >
                 {points[points.length - 1].date}
               </text>

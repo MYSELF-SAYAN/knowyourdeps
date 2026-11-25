@@ -273,46 +273,46 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/45 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#070b14]/55 backdrop-blur-sm overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="comparison-title"
     >
-      <div className="bg-white border border-[#e8e8e8] rounded-[24px] shadow-2xl w-full max-w-6xl max-h-[94vh] flex flex-col overflow-hidden">
+      <div className="bg-white border border-[#dce7f5] rounded-[24px] shadow-2xl w-full max-w-6xl max-h-[94vh] flex flex-col overflow-hidden overscroll-contain">
         {/* Header Bar */}
-        <div className="px-6 py-4 border-b border-[#f0f0f0] flex items-center justify-between bg-[#fafafa]">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[10px] bg-[#eff6ff] border border-[#bfdbfe] text-[#1d53c6] flex items-center justify-center shrink-0">
-              <Scale className="h-5 w-5" />
+        <div className="px-6 py-4 border-b border-[#e8eef7] flex items-center justify-between bg-[#f8fbff]">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-[10px] bg-[#eff6ff] border border-[#bfdbfe] text-[#0558d6] flex items-center justify-center shrink-0">
+              <Scale className="h-5 w-5" aria-hidden="true" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 id="comparison-title" className="font-display font-bold text-[19px] text-[#0f172a]">
+                <h3 id="comparison-title" className="font-display font-semibold text-[19px] text-[#0f172a]">
                   Side-by-Side Deep Matrix
                 </h3>
                 <Badge variant="accent" size="sm">
                   Real-time Compare
                 </Badge>
               </div>
-              <p className="text-[12px] text-[#64748b] mt-0.5">
+              <p className="text-[12px] text-[#475569] mt-0.5">
                 Benchmark downloads, supply chain security, and geometry across packages and specific releases.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
             {/* Toggle Best in Class Highlights */}
             <button
               type="button"
               onClick={() => setHighlightLeaders(!highlightLeaders)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-all cursor-pointer border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12px] font-semibold transition-[background-color,border-color,color] duration-150 cursor-pointer border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] ${
                 highlightLeaders
-                  ? 'bg-[#eff6ff] border-[#bfdbfe] text-[#1d53c6] shadow-xs'
-                  : 'bg-white border-[#e2e8f0] text-[#64748b] hover:text-[#0f172a]'
+                  ? 'bg-[#eff6ff] border-[#bfdbfe] text-[#0558d6] shadow-xs'
+                  : 'bg-white border-[#dce7f5] text-[#475569] hover:text-[#0f172a]'
               }`}
               title="Highlight leaders in each metric"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Highlight Leaders</span>
             </button>
 
@@ -321,31 +321,32 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
               type="button"
               onClick={onClose}
               aria-label="Close comparison matrix"
-              className="w-8 h-8 rounded-full hover:bg-[#e2e8f0] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full hover:bg-[#e2e8f0] flex items-center justify-center text-[#475569] hover:text-[#0f172a] transition-colors duration-150 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Add Package & Autocomplete Suggestions Bar */}
-        <div className="px-6 py-3.5 bg-white border-b border-[#f0f0f0]">
+        <div className="px-6 py-3.5 bg-white border-b border-[#e8eef7]">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2" ref={inputContainerRef}>
               {/* Ecosystem Selector */}
-              <div className="flex items-center rounded-[10px] bg-[#f1f5f9] p-0.5 border border-[#e2e8f0]">
+              <div role="group" aria-label="Filter search by ecosystem" className="flex items-center rounded-[10px] bg-[#f1f6fd] p-0.5 border border-[#dce7f5]">
                 {(['npm', 'pypi'] as const).map((eco) => (
                   <button
                     key={eco}
                     type="button"
+                    aria-pressed={newPkgEcosystem === eco}
                     onClick={() => {
                       setNewPkgEcosystem(eco);
                       setSuggestions([]);
                     }}
-                    className={`px-3 py-1 text-[11.5px] font-bold rounded-[8px] transition-all cursor-pointer ${
+                    className={`px-3 py-1 text-[11.5px] font-bold rounded-[8px] transition-[background-color,color] duration-150 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0558d6] ${
                       newPkgEcosystem === eco
-                        ? 'bg-[#1d53c6] text-white shadow-xs'
-                        : 'text-[#64748b] hover:text-[#0f172a]'
+                        ? 'bg-[#087cf8] text-white shadow-xs'
+                        : 'text-[#475569] hover:text-[#0f172a]'
                     }`}
                   >
                     {eco.toUpperCase()}
@@ -357,28 +358,32 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
               <div className="relative flex-1 min-w-[240px]">
                 <form onSubmit={handleAddSubmit} className="relative w-full">
                   <div className="relative flex items-center">
-                    <Search className="absolute left-3 h-3.5 w-3.5 text-[#94a3b8]" />
+                    <Search className="absolute left-3 h-3.5 w-3.5 text-[#64748b]" aria-hidden="true" />
                     <input
                       type="text"
+                      name="compare-package"
+                      aria-label={`Search ${newPkgEcosystem} package to add`}
+                      autoComplete="off"
+                      spellCheck={false}
                       value={newPkgName}
                       onChange={(e) => setNewPkgName(e.target.value)}
                       onFocus={() => {
                         if (suggestions.length > 0) setIsSuggestionsOpen(true);
                       }}
-                      placeholder={`Search ${newPkgEcosystem} package or type pkg@version (e.g. react@18.2.0)...`}
+                      placeholder={`Search ${newPkgEcosystem} package or type pkg@version (e.g. react@18.2.0)…`}
                       disabled={packageList.length >= 4}
-                      className="w-full pl-9 pr-9 py-2 text-[12.5px] bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+                      className="w-full pl-9 pr-9 py-2 text-[12.5px] bg-[#f8fbff] border border-[#dce7f5] rounded-[10px] focus:outline-none focus:border-[#087cf8] focus:ring-2 focus:ring-[#087cf8]/20 focus:bg-white transition-colors"
                     />
                     {isSearchingSuggestions && (
-                      <RefreshCw className="absolute right-3 h-3.5 w-3.5 animate-spin text-[#1d53c6]" />
+                      <RefreshCw className="absolute right-3 h-3.5 w-3.5 animate-spin text-[#0558d6]" aria-hidden="true" />
                     )}
                   </div>
                 </form>
 
                 {/* Autocomplete Dropdown */}
                 {isSuggestionsOpen && suggestions.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e2e8f0] rounded-[16px] shadow-xl z-50 p-1.5 max-h-[260px] overflow-y-auto animate-in fade-in zoom-in-95 duration-100">
-                    <span className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-[#94a3b8] block">
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#dce7f5] rounded-[16px] shadow-xl z-50 p-1.5 max-h-[260px] overflow-y-auto overscroll-contain">
+                    <span className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-[#64748b] block">
                       Matching {newPkgEcosystem.toUpperCase()} Packages
                     </span>
                     {suggestions.map((item) => (
@@ -386,11 +391,11 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                         key={item.name}
                         type="button"
                         onClick={() => addPackageTarget(item.name, newPkgEcosystem)}
-                        className="w-full px-3 py-2 text-left rounded-[10px] hover:bg-[#eff6ff] transition-colors flex items-center justify-between group cursor-pointer"
+                        className="w-full px-3 py-2 text-left rounded-[10px] hover:bg-[#eff6ff] transition-colors flex items-center justify-between group cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0558d6]"
                       >
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-bold text-[13px] text-[#0f172a] group-hover:text-[#1d53c6]">
+                            <span className="font-mono font-bold text-[13px] text-[#0f172a] group-hover:text-[#0558d6]">
                               {item.name}
                             </span>
                             <span className="font-mono text-[10px] text-[#64748b] bg-[#f1f5f9] px-1.5 py-0.2 rounded">
@@ -403,7 +408,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                             </p>
                           )}
                         </div>
-                        <Plus className="h-4 w-4 text-[#1d53c6] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Plus className="h-4 w-4 text-[#0558d6] opacity-0 group-hover:opacity-100 transition-opacity" />
                       </button>
                     ))}
                   </div>
@@ -421,7 +426,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                 Add to Matrix
               </KeycapButton>
 
-              {loading && <RefreshCw className="h-4 w-4 animate-spin text-[#1d53c6] ml-1" />}
+              {loading && <RefreshCw className="h-4 w-4 animate-spin text-[#0558d6] ml-1" />}
             </div>
 
             {/* Quick Rival Suggestion Pills */}
@@ -433,7 +438,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                   type="button"
                   onClick={() => addPackageTarget(pkg, newPkgEcosystem)}
                   disabled={packageList.length >= 4}
-                  className="px-2 py-0.5 rounded-[6px] bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] hover:bg-[#eff6ff] hover:border-[#bfdbfe] hover:text-[#1d53c6] transition-colors cursor-pointer"
+                  className="px-2 py-0.5 rounded-[6px] bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] hover:bg-[#eff6ff] hover:border-[#bfdbfe] hover:text-[#0558d6] transition-colors cursor-pointer"
                 >
                   +{pkg}
                 </button>
@@ -467,7 +472,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                 {/* Column Headers with Package Name & Real-Time Version Selector Dropdown */}
                 <thead>
                   <tr className="border-b border-[#e2e8f0]">
-                    <th className="w-[170px] p-3 text-left text-[11px] font-bold text-[#64748b] uppercase tracking-wider bg-[#fafafa] rounded-tl-[14px]">
+                    <th className="w-[170px] p-3 text-left text-[11px] font-bold text-[#64748b] uppercase tracking-wider bg-[#f8fbff] rounded-tl-[14px]">
                       Metric & Spec
                     </th>
                     {data.map((item, idx) => {
@@ -493,7 +498,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                                   item.overview.name
                                 )}&type=overview`}
                                 onClick={onClose}
-                                className="font-mono text-[15px] font-bold text-[#0f172a] hover:text-[#1d53c6] transition-colors flex items-center gap-1 mt-1 truncate group"
+                                className="font-mono text-[15px] font-bold text-[#0f172a] hover:text-[#0558d6] transition-colors flex items-center gap-1 mt-1 truncate group"
                               >
                                 <span className="truncate">{item.overview.name}</span>
                                 <ArrowUpRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -503,15 +508,17 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                               <div className="relative mt-1.5" ref={isDropdownOpen ? versionDropdownRef : null}>
                                 <button
                                   type="button"
+                                  aria-expanded={isDropdownOpen}
                                   onClick={() => {
                                     setActiveVersionDropdown(isDropdownOpen ? null : idx);
                                     setVersionFilterQuery('');
                                   }}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-[#bfdbfe] hover:border-[#1d53c6] text-[11.5px] font-mono font-bold text-[#1d53c6] shadow-2xs transition-all cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-white border border-[#bfdbfe] hover:border-[#0558d6] text-[11.5px] font-mono font-bold text-[#0558d6] shadow-2xs transition-[border-color,color] duration-150 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                                   title="Click to switch version in real-time"
                                 >
                                   <span>v{item.selectedVersion}</span>
                                   <ChevronDown
+                                    aria-hidden="true"
                                     className={`h-3 w-3 transition-transform duration-150 ${
                                       isDropdownOpen ? 'rotate-180' : ''
                                     }`}
@@ -520,20 +527,24 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                                 {/* Version Selector Popover */}
                                 {isDropdownOpen && (
-                                  <div className="absolute left-0 top-full mt-1.5 w-56 bg-white border border-[#e2e8f0] rounded-[14px] shadow-2xl z-50 p-2 flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-100">
+                                  <div className="absolute left-0 top-full mt-1.5 w-56 bg-white border border-[#dce7f5] rounded-[14px] shadow-2xl z-50 p-2 flex flex-col gap-1.5 overscroll-contain">
                                     <div className="relative">
-                                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-[#94a3b8]" />
+                                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-[#64748b]" aria-hidden="true" />
                                       <input
                                         type="text"
+                                        name="compare-version-filter"
+                                        aria-label="Filter compared package versions"
+                                        autoComplete="off"
+                                        spellCheck={false}
                                         value={versionFilterQuery}
                                         onChange={(e) => setVersionFilterQuery(e.target.value)}
-                                        placeholder="Filter versions..."
-                                        className="w-full pl-7 pr-2 py-1 text-[11px] font-mono bg-[#f8fafc] border border-[#e2e8f0] rounded-[6px] focus:outline-none focus:border-[#1d53c6]"
+                                        placeholder="Filter versions…"
+                                        className="w-full pl-7 pr-2 py-1 text-[11px] font-mono bg-[#f8fbff] border border-[#dce7f5] rounded-[6px] focus:outline-none focus:border-[#087cf8] focus:ring-2 focus:ring-[#087cf8]/20"
                                         autoFocus
                                       />
                                     </div>
 
-                                    <div className="max-h-48 overflow-y-auto divide-y divide-[#f1f5f9] scrollbar-thin">
+                                    <div className="max-h-48 overflow-y-auto overscroll-contain divide-y divide-[#f1f5f9] scrollbar-thin">
                                       {filteredVersions.length === 0 ? (
                                         <div className="p-2 text-center text-[10.5px] text-[#64748b]">
                                           No versions match
@@ -548,12 +559,12 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                                               onClick={() => handleSwitchVersion(idx, v.version)}
                                               className={`w-full px-2.5 py-1.5 text-left text-[11px] font-mono rounded-[6px] flex items-center justify-between transition-colors cursor-pointer ${
                                                 isSelected
-                                                  ? 'bg-[#eff6ff] text-[#1d53c6] font-bold'
+                                                  ? 'bg-[#eff6ff] text-[#0558d6] font-bold'
                                                   : 'hover:bg-[#f8fafc] text-[#0f172a]'
                                               }`}
                                             >
                                               <span>v{v.version}</span>
-                                              {isSelected && <Check className="h-3 w-3 text-[#1d53c6]" />}
+                                              {isSelected && <Check className="h-3 w-3 text-[#0558d6]" />}
                                             </button>
                                           );
                                         })
@@ -583,9 +594,9 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                 <tbody className="divide-y divide-[#e2e8f0] text-[12px]">
                   {/* Row: Weekly Downloads */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
-                        <Download className="h-3.5 w-3.5 text-[#1d53c6]" />
+                        <Download className="h-3.5 w-3.5 text-[#0558d6]" />
                         <span>Weekly Downloads</span>
                       </div>
                     </td>
@@ -616,7 +627,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: 30-Day Velocity & Daily Avg */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <Activity className="h-3.5 w-3.5 text-[#17a45c]" />
                         <span>Daily Velocity Avg</span>
@@ -636,10 +647,10 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Active CVEs in Selected Version */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5 text-[#17a45c]" />
-                        <span>Active CVEs (v{data[0]?.selectedVersion ? '...' : ''})</span>
+                        <span>Active CVEs (v{data[0]?.selectedVersion ? '…' : ''})</span>
                       </div>
                     </td>
                     {data.map((item, idx) => {
@@ -675,7 +686,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Lifetime Historical CVE Records */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <ShieldAlert className="h-3.5 w-3.5 text-[#f59e0b]" />
                         <span>Historical Advisories</span>
@@ -697,9 +708,9 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Direct Dependencies */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
-                        <Layers className="h-3.5 w-3.5 text-[#1d53c6]" />
+                        <Layers className="h-3.5 w-3.5 text-[#0558d6]" />
                         <span>Direct Dependencies</span>
                       </div>
                     </td>
@@ -717,7 +728,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                             <span className="font-bold text-[#0f172a]">{direct}</span>
                             <span className="text-[#64748b] text-[11px]">direct</span>
                             {isLeanest && (
-                              <span className="text-[10px] font-bold text-[#1d53c6] uppercase">
+                              <span className="text-[10px] font-bold text-[#0558d6] uppercase">
                                 Leanest
                               </span>
                             )}
@@ -729,7 +740,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Transitive Graph Complexity */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <GitFork className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Transitive Nodes</span>
@@ -748,7 +759,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Unpacked Size */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <HardDrive className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Unpacked Size</span>
@@ -767,7 +778,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-[#0f172a]">{formatBytes(size)}</span>
                             {isLightest && (
-                              <span className="text-[10px] font-bold text-[#1d53c6] uppercase">
+                              <span className="text-[10px] font-bold text-[#0558d6] uppercase">
                                 Lightest
                               </span>
                             )}
@@ -779,7 +790,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Files Count */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <FileCode className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Package Files</span>
@@ -794,9 +805,9 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Type Definitions */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
-                        <Code2 className="h-3.5 w-3.5 text-[#1d53c6]" />
+                        <Code2 className="h-3.5 w-3.5 text-[#0558d6]" />
                         <span>Type Definitions</span>
                       </div>
                     </td>
@@ -811,7 +822,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Required Runtime Engine */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <Terminal className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Required Runtime</span>
@@ -826,7 +837,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: License */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <FileCode className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>License</span>
@@ -843,7 +854,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: GitHub Stars */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <Star className="h-3.5 w-3.5 text-amber-500" />
                         <span>GitHub Stars</span>
@@ -876,7 +887,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Open Issues */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <Activity className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Open Issues</span>
@@ -891,7 +902,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Release Date */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff]">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5 text-[#64748b]" />
                         <span>Release Date</span>
@@ -908,7 +919,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
 
                   {/* Row: Deep Dive Action */}
                   <tr>
-                    <td className="p-3 font-semibold text-[#64748b] bg-[#fafafa] rounded-bl-[14px]">
+                    <td className="p-3 font-semibold text-[#64748b] bg-[#f8fbff] rounded-bl-[14px]">
                       <span>Deep Dive</span>
                     </td>
                     {data.map((item, idx) => (
@@ -918,7 +929,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
                             item.overview.name
                           )}&version=${encodeURIComponent(item.selectedVersion)}&type=overview`}
                           onClick={onClose}
-                          className="w-full text-center py-1.5 px-3 bg-white hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] rounded-[8px] text-[11.5px] font-bold text-[#0f172a] hover:text-[#1d53c6] transition-all flex items-center justify-center gap-1"
+                          className="w-full text-center py-1.5 px-3 bg-white hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] rounded-[8px] text-[11.5px] font-bold text-[#0f172a] hover:text-[#0558d6] transition-[background-color,border-color,color,box-shadow,transform,opacity] flex items-center justify-center gap-1"
                         >
                           <span>Inspect {item.overview.name}@v{item.selectedVersion}</span>
                           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -933,7 +944,7 @@ export function ComparisonModal({ isOpen, onClose, initialPackages }: Comparison
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3.5 border-t border-[#f0f0f0] bg-[#fafafa] flex items-center justify-between">
+        <div className="px-6 py-3.5 border-t border-[#e8eef7] bg-[#f8fbff] flex items-center justify-between">
           <span className="text-[12px] text-[#64748b]">
             {data.length} of 4 slots used • Select version dropdown in column header to switch release in real-time
           </span>

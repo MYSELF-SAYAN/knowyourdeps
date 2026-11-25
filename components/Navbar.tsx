@@ -21,72 +21,109 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
   const switchEcosystem = (eco: Ecosystem) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('ecosystem', eco);
-    if (!currentPackage) {
-      router.push(`/?${params.toString()}`);
-    } else {
-      // Clear package if switching ecosystem since package names differ
+    if (currentPackage) {
       params.delete('package');
       params.delete('type');
-      router.push(`/?${params.toString()}`);
     }
+    router.push(`/?${params.toString()}`);
   };
 
   return (
-    <nav className="pointer-events-auto flex items-center justify-between gap-3 sm:gap-6 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white/85 backdrop-blur-xl border border-white/80 shadow-[0_8px_32px_rgba(14,165,233,0.12),0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-200 animate-in fade-in slide-in-from-top-2">
-      {/* Brand with first pixelated display font */}
-      <Link
-        href="/"
-        className="flex items-center gap-2 text-[#0f172a] hover:opacity-85 transition-opacity select-none group"
+    <div className="pointer-events-auto relative inline-flex max-w-full items-start">
+      {/* Left inverted concave fillet ear merging notch flush into top screen edge */}
+      <svg
+        aria-hidden="true"
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        className="pointer-events-none absolute -left-[14px] top-0 hidden sm:block shrink-0"
       >
-        <div className="flex h-6 w-6 items-center justify-center rounded-[7px] bg-[#1d53c6] text-white shadow-[0_2px_6px_rgba(2,132,199,0.35)]">
-          <Terminal className="h-3 w-3" />
-        </div>
-        <span className="font-display text-[19px] font-bold tracking-tight text-[#0f172a]">
-          knowyourdeps
-        </span>
-      </Link>
+        <path d="M 0 0 L 14 0 L 14 14 A 14 14 0 0 0 0 0 Z" fill="#03050a" />
+      </svg>
 
-      {/* Animated Ecosystem Toggle Pill */}
-      <div className="relative flex items-center rounded-full bg-[#eff6ff] p-1 border border-[#bfdbfe]/50">
-        <button
-          type="button"
-          onClick={() => switchEcosystem('npm')}
-          className={`relative z-10 flex items-center px-3 py-1 text-[12px] font-semibold transition-all duration-150 rounded-full cursor-pointer select-none active:scale-[0.96] ${
-            currentEcosystem === 'npm'
-              ? 'bg-[#1d53c6] text-white shadow-xs font-bold'
-              : 'text-[#64748b] hover:text-[#0f172a]'
-          }`}
-        >
-          <span>npm</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => switchEcosystem('pypi')}
-          className={`relative z-10 flex items-center px-3 py-1 text-[12px] font-semibold transition-all duration-150 rounded-full cursor-pointer select-none active:scale-[0.96] ${
-            currentEcosystem === 'pypi'
-              ? 'bg-[#1d53c6] text-white shadow-xs font-bold'
-              : 'text-[#64748b] hover:text-[#0f172a]'
-          }`}
-        >
-          <span>PyPI</span>
-        </button>
-      </div>
-
-      {/* Right Quick Actions (Compare, Docs & External API) */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      {/* Main MacBook-style Apple Notch bar */}
+      <nav
+        aria-label="Primary"
+        className="relative flex max-w-full items-center justify-between gap-2.5 sm:gap-6 bg-[#03050a] px-3 sm:px-4.5 py-2 sm:py-2.5 rounded-b-[18px] sm:rounded-b-[22px] text-white shadow-[0_14px_34px_-10px_rgba(3,18,56,0.5)]"
+      >
+        {/* Brand squircle icon + wordmark */}
         <Link
-          href="/docs"
-          className={`flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.96] shadow-xs ${
-            isDocsPage
-              ? 'bg-[#1d53c6] text-white border border-[#1d53c6]'
-              : 'bg-[#f8fafc] hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] text-[#0f172a] hover:text-[#1d53c6]'
-          }`}
-          title="MCP Server & Agent Skills Documentation"
+          href="/"
+          aria-label="KnowYourDeps home"
+          className="flex items-center gap-2 select-none rounded-lg pr-0.5 transition-opacity duration-150 hover:opacity-85 text-white shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
         >
-          <BookOpen className={`h-3.5 w-3.5 ${isDocsPage ? 'text-white' : 'text-[#1d53c6]'}`} />
-          <span>Docs</span>
+          <div
+            aria-hidden="true"
+            className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-[8px] bg-gradient-to-b from-[#68c5ff] via-[#1a7bf8] to-[#0645b6] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.55),0_2px_8px_rgba(8,124,248,0.45)] shrink-0"
+          >
+            <Terminal className="h-3.5 w-3.5" />
+          </div>
+          <span
+            className="hidden min-[440px]:inline font-display text-[14.5px] sm:text-[15.5px] font-semibold tracking-tight text-white"
+            translate="no"
+          >
+            knowyourdeps
+          </span>
         </Link>
 
+        {/* Center quiet navigation & ecosystem controls */}
+        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <div
+            role="group"
+            aria-label="Select package ecosystem"
+            className="flex items-center rounded-lg p-0.5 bg-white/[0.08] border border-white/10 shrink-0"
+          >
+            <button
+              type="button"
+              aria-pressed={currentEcosystem === 'npm'}
+              onClick={() => switchEcosystem('npm')}
+              translate="no"
+              className={`flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 text-[11.5px] sm:text-[12px] font-medium rounded-md cursor-pointer select-none transition-[background-color,color] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8] ${
+                currentEcosystem === 'npm'
+                  ? 'bg-[#087cf8] text-white font-semibold'
+                  : 'text-[#a1a8b3] hover:text-white'
+              }`}
+            >
+              npm
+            </button>
+            <button
+              type="button"
+              aria-pressed={currentEcosystem === 'pypi'}
+              onClick={() => switchEcosystem('pypi')}
+              translate="no"
+              className={`flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 text-[11.5px] sm:text-[12px] font-medium rounded-md cursor-pointer select-none transition-[background-color,color] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8] ${
+                currentEcosystem === 'pypi'
+                  ? 'bg-[#087cf8] text-white font-semibold'
+                  : 'text-[#a1a8b3] hover:text-white'
+              }`}
+            >
+              PyPI
+            </button>
+          </div>
+
+          <Link
+            href="/docs"
+            aria-current={isDocsPage ? 'page' : undefined}
+            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] sm:text-[13px] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8] ${
+              isDocsPage ? 'text-white font-semibold' : 'text-[#a1a8b3] hover:text-white'
+            }`}
+          >
+            <BookOpen className="h-3.5 w-3.5 shrink-0 sm:hidden" aria-hidden="true" />
+            <span>Docs</span>
+          </Link>
+
+          <Link
+            href="https://docs.deps.dev/api/v3/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[13px] font-medium text-[#a1a8b3] hover:text-white transition-colors duration-150 max-md:hidden px-1 py-1 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
+            translate="no"
+          >
+            deps.dev
+          </Link>
+        </div>
+
+        {/* Far-right bright white CTA pill (matches Apple Notch reference silhouette) */}
         <button
           type="button"
           onClick={() => {
@@ -96,22 +133,23 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
               router.push(`/?compare=true&ecosystem=${currentEcosystem}`);
             }
           }}
-          className="flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-full bg-[#f8fafc] hover:bg-[#eff6ff] border border-[#e2e8f0] hover:border-[#bfdbfe] px-3 text-[12px] font-semibold text-[#0f172a] hover:text-[#1d53c6] transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.96] shadow-xs"
-          title="Compare Packages Side-by-Side"
+          className="flex h-7.5 sm:h-8 cursor-pointer items-center gap-1.5 rounded-[9px] sm:rounded-[10px] bg-white hover:bg-[#e8f3ff] px-2.5 sm:px-3.5 text-[11.5px] sm:text-[12.5px] font-semibold text-[#03050a] shadow-xs transition-[background-color,transform] duration-150 active:scale-[0.97] shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
         >
-          <Scale className="h-3.5 w-3.5 text-[#1d53c6]" />
+          <Scale className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>Compare</span>
         </button>
+      </nav>
 
-        <Link
-          href="https://docs.deps.dev/api/v3/"
-          target="_blank"
-          rel="noreferrer"
-          className="text-[12px] font-medium text-[#64748b] hover:text-[#1d53c6] transition-colors max-sm:hidden px-2"
-        >
-          deps.dev v3
-        </Link>
-      </div>
-    </nav>
+      {/* Right inverted concave fillet ear merging notch flush into top screen edge */}
+      <svg
+        aria-hidden="true"
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        className="pointer-events-none absolute -right-[14px] top-0 hidden sm:block shrink-0"
+      >
+        <path d="M 0 0 L 14 0 A 14 14 0 0 0 0 14 Z" fill="#03050a" />
+      </svg>
+    </div>
   );
 }

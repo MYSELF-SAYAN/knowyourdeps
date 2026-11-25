@@ -271,14 +271,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
   return (
     <div className="flex flex-col gap-6 animate-tab-in">
       {/* Top Banner: Status + Version Dropdown Selector */}
-      <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+      <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-6 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* Status icon and header */}
           <div className="flex items-start sm:items-center gap-4">
             <div
               className={`w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 transition-colors ${
                 loading
-                  ? 'bg-[#f4f4f4] text-[#555a64]'
+                  ? 'bg-[#f1f6fd] text-[#475569]'
                   : activeList.length > 0
                   ? 'bg-[#feecee] text-[#e5484d]'
                   : 'bg-[#eefcf3] text-[#17a45c]'
@@ -295,8 +295,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="font-sans font-bold text-[18px] text-[#1a1a1a]">
-                  Vulnerabilities for <span className="font-mono text-[#1d53c6]">{packageName}@v{data?.checkedVersion || activeVersion}</span>
+                <h3 className="font-sans font-bold text-[18px] text-[#0f172a]">
+                  Vulnerabilities for <span className="font-mono text-[#0558d6]">{packageName}@v{data?.checkedVersion || activeVersion}</span>
                 </h3>
 
                 {data && (
@@ -305,9 +305,9 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                   </Badge>
                 )}
               </div>
-              <p className="text-[13px] text-[#6e6e6e] mt-1">
+              <p className="text-[13px] text-[#475569] mt-1">
                 {loading
-                  ? 'Auditing OSV.dev, Google deps.dev & NVD NIST databases...'
+                  ? 'Auditing OSV.dev, Google deps.dev & NVD NIST databases…'
                   : activeList.length > 0
                   ? `${activeList.length} active security ${activeList.length === 1 ? 'vulnerability affects' : 'vulnerabilities affect'} release v${data?.checkedVersion || activeVersion}. Upgrade recommended.`
                   : `Release v${data?.checkedVersion || activeVersion} has 0 active CVEs (${allHistoricalList.length} historical CVE records tracked across ecosystem).`}
@@ -322,33 +322,37 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               <button
                 type="button"
                 onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-                className="flex items-center gap-2 px-3.5 py-2 bg-[#f8f8f8] hover:bg-[#efefef] border border-[#e8e8e8] rounded-[12px] text-[13px] font-semibold text-[#1a1a1a] select-none transition-all duration-150 cursor-pointer active:scale-[0.97]"
+                className="flex items-center gap-2 px-3.5 py-2 bg-[#f8fbff] hover:bg-[#eff6ff] border border-[#dce7f5] rounded-[12px] text-[13px] font-semibold text-[#0f172a] select-none transition-[background-color,border-color,transform] duration-150 cursor-pointer active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                 aria-expanded={isVersionDropdownOpen}
               >
-                <span className="text-[#555a64] font-normal">Version:</span>
-                <span className="font-mono font-bold text-[#1d53c6]">v{activeVersion}</span>
-                <ChevronDown className={`h-4 w-4 text-[#555a64] transition-transform duration-200 ${isVersionDropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="text-[#475569] font-normal">Version:</span>
+                <span className="font-mono font-bold text-[#0558d6]">v{activeVersion}</span>
+                <ChevronDown aria-hidden="true" className={`h-4 w-4 text-[#475569] transition-transform duration-200 ${isVersionDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Dropdown Popover */}
               {isVersionDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#e8e8e8] rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 origin-top-right overscroll-contain">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#555a64]" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" aria-hidden="true" />
                     <input
                       type="text"
+                      name="security-version-filter"
+                      aria-label="Filter audited release version"
+                      autoComplete="off"
+                      spellCheck={false}
                       value={versionSearch}
                       onChange={(e) => setVersionSearch(e.target.value)}
-                      placeholder="Search release version..."
-                      className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+                      placeholder="Search release version…"
+                      className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8fbff] border border-[#dce7f5] rounded-[8px] focus:outline-none focus:border-[#087cf8] focus:ring-2 focus:ring-[#087cf8]/20 focus:bg-white transition-colors"
                       autoFocus
                     />
                   </div>
 
-                  <div className="max-h-60 overflow-y-auto divide-y divide-[#f4f4f4] scrollbar-thin">
+                  <div className="max-h-60 overflow-y-auto overscroll-contain divide-y divide-[#f1f5f9] scrollbar-thin">
                     {filteredVersions.length === 0 ? (
-                      <div className="p-4 text-center text-[12px] text-[#555a64]">
-                        {loadingVersions ? 'Loading versions list...' : 'No versions found.'}
+                      <div className="p-4 text-center text-[12px] text-[#475569]">
+                        {loadingVersions ? 'Loading versions list…' : 'No versions found.'}
                       </div>
                     ) : (
                       filteredVersions.map((v) => {
@@ -360,12 +364,12 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                             onClick={() => handleVersionChange(v.version)}
                             className={`w-full px-3 py-2 text-left flex items-center justify-between text-[12px] transition-colors rounded-[8px] cursor-pointer ${
                               isSelected
-                                ? 'bg-[#eff6ff] text-[#1d53c6] font-bold'
-                                : 'hover:bg-[#f8f8f8] text-[#1a1a1a]'
+                                ? 'bg-[#eff6ff] text-[#0558d6] font-bold'
+                                : 'hover:bg-[#f8fbff] text-[#0f172a]'
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              {isSelected && <Check className="h-3.5 w-3.5 text-[#1d53c6]" />}
+                              {isSelected && <Check className="h-3.5 w-3.5 text-[#0558d6]" />}
                               <span className="font-mono">v{v.version}</span>
                               {v.isLatest && (
                                 <Badge variant="accent" size="sm">
@@ -378,7 +382,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-[10px] text-[#a6a6a6]">
+                            <span className="text-[10px] text-[#64748b]">
                               {v.publishedAt ? new Date(v.publishedAt).toLocaleDateString() : ''}
                             </span>
                           </button>
@@ -388,11 +392,11 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                   </div>
 
                   {latestVersionObj && activeVersion !== latestVersionObj.version && (
-                    <div className="pt-2 border-t border-[#f0f0f0]">
+                    <div className="pt-2 border-t border-[#e8eef7]">
                       <button
                         type="button"
                         onClick={() => handleVersionChange(latestVersionObj.version)}
-                        className="w-full text-center py-1.5 text-[11px] font-semibold text-[#1d53c6] hover:bg-[#eff6ff] rounded-[8px] transition-colors flex items-center justify-center gap-1"
+                        className="w-full text-center py-1.5 text-[11px] font-semibold text-[#0558d6] hover:bg-[#eff6ff] rounded-[8px] transition-colors flex items-center justify-center gap-1"
                       >
                         <Sparkles className="h-3 w-3" />
                         Jump to latest release (v{latestVersionObj.version})
@@ -418,36 +422,36 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
         </div>
 
         {/* Multi-API Sources Attributions */}
-        <div className="mt-4 pt-4 border-t border-[#f0f0f0] flex flex-wrap items-center justify-between text-[11px] text-[#555a64] gap-2">
+        <div className="mt-4 pt-4 border-t border-[#e8eef7] flex flex-wrap items-center justify-between text-[11px] text-[#475569] gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span>Aggregated Intelligence:</span>
-            <a href="https://google.github.io/osv.dev/api/" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
+            <a href="https://google.github.io/osv.dev/api/" target="_blank" rel="noopener noreferrer" className="text-[#0558d6] hover:underline font-mono">
               OSV.dev v1
             </a>
             <span>•</span>
-            <a href="https://docs.deps.dev/api/v3/" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
+            <a href="https://docs.deps.dev/api/v3/" target="_blank" rel="noopener noreferrer" className="text-[#0558d6] hover:underline font-mono">
               deps.dev v3
             </a>
             <span>•</span>
-            <a href="https://nvd.nist.gov/developers/vulnerabilities" target="_blank" rel="noopener noreferrer" className="text-[#1d53c6] hover:underline font-mono">
+            <a href="https://nvd.nist.gov/developers/vulnerabilities" target="_blank" rel="noopener noreferrer" className="text-[#0558d6] hover:underline font-mono">
               NVD NIST 2.0
             </a>
           </div>
           <span>
-            Target: <strong className="text-[#1a1a1a]">{ecosystem.toUpperCase()}</strong> • <strong className="text-[#1a1a1a]">{packageName}@{data?.checkedVersion || activeVersion}</strong>
+            Target: <strong className="text-[#0f172a]">{ecosystem.toUpperCase()}</strong> • <strong className="text-[#0f172a]">{packageName}@{data?.checkedVersion || activeVersion}</strong>
           </span>
         </div>
       </div>
 
       {/* Audited Components Summary Pills */}
       {data && data.auditedComponents && data.auditedComponents.length > 1 && (
-        <div className="p-4 bg-white border border-[#e8e8e8] rounded-[16px] text-[12px] flex flex-col gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#6e6e6e] font-semibold">
+        <div className="p-4 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] text-[12px] flex flex-col gap-2 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569] font-semibold">
             <span className="flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-[#1d53c6]" />
+              <Layers className="h-4 w-4 text-[#0558d6]" />
               Audited Ecosystem & Supply Chain Components ({data.auditedComponents.length})
             </span>
-            <span className="text-[11px] font-normal text-[#555a64]">
+            <span className="text-[11px] font-normal text-[#475569]">
               Monorepos and direct dependencies audited in OSV / NVD
             </span>
           </div>
@@ -456,10 +460,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
             {data.auditedComponents.map((comp) => (
               <div
                 key={comp.name}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-[#f8f8f8] border border-[#e8e8e8]"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-[#f8fbff] border border-[#dce7f5]"
               >
-                <span className="font-mono font-semibold text-[#1a1a1a]">{comp.name}</span>
-                <span className="text-[10px] text-[#555a64]">
+                <span className="font-mono font-semibold text-[#0f172a]">{comp.name}</span>
+                <span className="text-[10px] text-[#475569]">
                   ({comp.type === 'direct' ? 'Direct' : comp.type === 'parent-ecosystem' ? 'Core Monorepo' : 'Dependency'})
                 </span>
                 {comp.count > 0 && (
@@ -474,16 +478,16 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
       )}
 
       {/* De-cluttered Control Bar: 2-Segment Switcher + Single Filter Button + Live Search */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-[#e8e8e8] p-3 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/92 backdrop-blur-xl border border-white/90 p-3 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
         {/* 2-Segment Switcher with Clearer Wording */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#f4f4f4] rounded-[12px] border border-[#e8e8e8] shrink-0">
+        <div className="flex items-center gap-1.5 p-1 bg-[#f1f6fd] rounded-[12px] border border-[#dce7f5] shrink-0">
           <button
             type="button"
             onClick={() => setVersionFilter('selected')}
-            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
+            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer flex items-center gap-2 select-none ${
               versionFilter === 'selected'
-                ? 'bg-white text-[#1a1a1a] shadow-xs'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
+                ? 'bg-white text-[#0f172a] shadow-xs'
+                : 'text-[#475569] hover:text-[#0f172a]'
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${activeList.length > 0 ? 'bg-[#e5484d]' : 'bg-[#17a45c]'}`} />
@@ -500,14 +504,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
           <button
             type="button"
             onClick={() => setVersionFilter('all')}
-            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-all cursor-pointer flex items-center gap-2 select-none ${
+            className={`px-3.5 py-1.5 rounded-[9px] text-[12px] font-semibold transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer flex items-center gap-2 select-none ${
               versionFilter === 'all'
-                ? 'bg-white text-[#1a1a1a] shadow-xs'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
+                ? 'bg-white text-[#0f172a] shadow-xs'
+                : 'text-[#475569] hover:text-[#0f172a]'
             }`}
           >
             <span>Full Security History</span>
-            <span className="text-[11px] px-1.5 py-0.2 rounded-full font-mono font-medium bg-[#e8e8e8] text-[#555]">
+            <span className="text-[11px] px-1.5 py-0.2 rounded-full font-mono font-medium bg-[#dce7f5] text-[#555]">
               {allHistoricalList.length}
             </span>
           </button>
@@ -520,16 +524,16 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
             <button
               type="button"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border text-[12px] font-semibold transition-all cursor-pointer select-none active:scale-[0.98] ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] border text-[12px] font-semibold transition-[background-color,border-color,color,box-shadow,transform,opacity] cursor-pointer select-none active:scale-[0.98] ${
                 isFilterOpen || severityFilter !== 'all' || scope !== 'all'
-                  ? 'bg-[#eff6ff] border-[#bfdbfe] text-[#1d53c6]'
-                  : 'bg-[#f8fafc] border-[#e2e8f0] text-[#0f172a] hover:bg-[#f1f5f9]'
+                  ? 'bg-[#eff6ff] border-[#bfdbfe] text-[#0558d6]'
+                  : 'bg-[#f8fbff] border-[#dce7f5] text-[#0f172a] hover:bg-[#f1f6fd]'
               }`}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5 text-[#1d53c6]" />
+              <SlidersHorizontal className="h-3.5 w-3.5 text-[#0558d6]" />
               <span>Filter</span>
               {(severityFilter !== 'all' || scope !== 'all') && (
-                <span className="h-4 w-4 rounded-full bg-[#1d53c6] text-white text-[10px] font-bold flex items-center justify-center">
+                <span className="h-4 w-4 rounded-full bg-[#0558d6] text-white text-[10px] font-bold flex items-center justify-center">
                   {(severityFilter !== 'all' ? 1 : 0) + (scope !== 'all' ? 1 : 0)}
                 </span>
               )}
@@ -542,7 +546,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
             {/* Filter Dropdown Popover */}
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#e8e8e8] rounded-[18px] shadow-xl z-50 p-3.5 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-xl z-50 p-3.5 flex flex-col gap-3">
                 {/* Severity Selection */}
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] block mb-2">
@@ -556,8 +560,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         onClick={() => setSeverityFilter(sev)}
                         className={`px-2.5 py-1 text-[11px] font-semibold rounded-[6px] transition-colors cursor-pointer uppercase ${
                           severityFilter === sev
-                            ? 'bg-[#1d53c6] text-white'
-                            : 'bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]'
+                            ? 'bg-[#0558d6] text-white'
+                            : 'bg-[#f1f6fd] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]'
                         }`}
                       >
                         {sev}
@@ -567,7 +571,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                 </div>
 
                 {/* Component Scope Selection */}
-                <div className="pt-2 border-t border-[#f0f0f0]">
+                <div className="pt-2 border-t border-[#e8eef7]">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] block mb-2">
                     Component Scope
                   </span>
@@ -577,8 +581,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       onClick={() => setScope('all')}
                       className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
                         scope === 'all'
-                          ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
-                          : 'text-[#64748b] hover:bg-[#f8fafc]'
+                          ? 'bg-[#eff6ff] text-[#0558d6] font-semibold'
+                          : 'text-[#64748b] hover:bg-[#f8fbff]'
                       }`}
                     >
                       <span>All Components</span>
@@ -589,8 +593,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       onClick={() => setScope('direct')}
                       className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
                         scope === 'direct'
-                          ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
-                          : 'text-[#64748b] hover:bg-[#f8fafc]'
+                          ? 'bg-[#eff6ff] text-[#0558d6] font-semibold'
+                          : 'text-[#64748b] hover:bg-[#f8fbff]'
                       }`}
                     >
                       <span>Direct Component Only</span>
@@ -602,8 +606,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         onClick={() => setScope('parent-ecosystem')}
                         className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
                           scope === 'parent-ecosystem'
-                            ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
-                            : 'text-[#64748b] hover:bg-[#f8fafc]'
+                            ? 'bg-[#eff6ff] text-[#0558d6] font-semibold'
+                            : 'text-[#64748b] hover:bg-[#f8fbff]'
                         }`}
                       >
                         <span>Core Monorepo</span>
@@ -616,8 +620,8 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         onClick={() => setScope('dependency')}
                         className={`px-2.5 py-1 text-[11.5px] rounded-[6px] text-left transition-colors flex items-center justify-between cursor-pointer ${
                           scope === 'dependency'
-                            ? 'bg-[#eff6ff] text-[#1d53c6] font-semibold'
-                            : 'text-[#64748b] hover:bg-[#f8fafc]'
+                            ? 'bg-[#eff6ff] text-[#0558d6] font-semibold'
+                            : 'text-[#64748b] hover:bg-[#f8fbff]'
                         }`}
                       >
                         <span>Dependencies</span>
@@ -629,14 +633,14 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
                 {/* Reset Filters Option */}
                 {(severityFilter !== 'all' || scope !== 'all') && (
-                  <div className="pt-2 border-t border-[#f0f0f0] flex justify-end">
+                  <div className="pt-2 border-t border-[#e8eef7] flex justify-end">
                     <button
                       type="button"
                       onClick={() => {
                         setSeverityFilter('all');
                         setScope('all');
                       }}
-                      className="text-[11px] font-semibold text-[#1d53c6] hover:underline cursor-pointer"
+                      className="text-[11px] font-semibold text-[#0558d6] hover:underline cursor-pointer"
                     >
                       Reset All Filters
                     </button>
@@ -648,26 +652,31 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
           {/* Live Search CVE / Keyword */}
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" aria-hidden="true" />
             <input
               type="text"
+              name="cve-filter"
+              aria-label="Filter CVEs by ID or keyword"
+              autoComplete="off"
+              spellCheck={false}
               value={cveSearchQuery}
               onChange={(e) => setCveSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') setCveSearchQuery('');
               }}
-              placeholder="Search CVE ID (e.g. CVE-2024)..."
-              className="w-full pl-9 pr-16 py-1.5 text-[12px] bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+              placeholder="Search CVE ID (e.g. CVE-2024)…"
+              className="w-full pl-9 pr-16 py-1.5 text-[12px] bg-[#f8fbff] border border-[#dce7f5] rounded-[10px] focus:outline-none focus:border-[#087cf8] focus:ring-2 focus:ring-[#087cf8]/20 focus:bg-white transition-colors"
             />
             {cveSearchQuery && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold bg-[#eff6ff] text-[#1d53c6] border border-[#bfdbfe]">
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold bg-[#eff6ff] text-[#0558d6] border border-[#bfdbfe] tabular-nums">
                   {filteredAdvisories.length}
                 </span>
                 <button
                   type="button"
                   onClick={() => setCveSearchQuery('')}
-                  className="text-[11px] text-[#64748b] hover:text-[#0f172a] cursor-pointer"
+                  aria-label="Clear CVE search filter"
+                  className="text-[11px] text-[#475569] hover:text-[#0f172a] cursor-pointer rounded p-0.5 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0558d6]"
                   title="Clear search (Esc)"
                 >
                   ✕
@@ -680,9 +689,9 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Historical View Banner Indicator */}
       {versionFilter === 'all' && (
-        <div className="px-4 py-3 bg-[#f8f9ff] border border-[#bfdbfe] rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#334155] animate-in fade-in duration-200">
+        <div className="px-4 py-3 bg-[#f8f9ff] border border-[#bfdbfe] rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-[#334155]">
           <div className="flex items-center gap-2">
-            <Info className="h-4 w-4 text-[#1d53c6] shrink-0" />
+            <Info className="h-4 w-4 text-[#0558d6] shrink-0" />
             <span>
               Viewing complete vulnerability history across all versions ({allHistoricalList.length} total records).{' '}
               <strong className="text-[#e5484d]">{activeList.length} active</strong> in v{activeVersion},{' '}
@@ -692,7 +701,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
           <button
             type="button"
             onClick={() => setVersionFilter('selected')}
-            className="text-[#1d53c6] hover:underline font-semibold cursor-pointer shrink-0"
+            className="text-[#0558d6] hover:underline font-semibold cursor-pointer shrink-0"
           >
             Show Only Active for v{activeVersion} ({activeList.length}) →
           </button>
@@ -701,24 +710,24 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Loading Skeleton: High Fidelity Advisory Cards */}
       {loading && (
-        <div className="space-y-4 animate-in fade-in duration-150">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="p-5 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 animate-pulse"
+              className="p-5 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] space-y-3 animate-pulse"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="h-6 w-20 bg-[#f0f0f0] rounded-[6px]" />
-                  <div className="h-6 w-28 bg-[#f0f0f0] rounded-[6px]" />
+                  <div className="h-6 w-20 bg-[#e8eef7] rounded-[6px]" />
+                  <div className="h-6 w-28 bg-[#e8eef7] rounded-[6px]" />
                 </div>
-                <div className="h-5 w-16 bg-[#f0f0f0] rounded" />
+                <div className="h-5 w-16 bg-[#e8eef7] rounded" />
               </div>
-              <div className="h-4 w-3/4 bg-[#f0f0f0] rounded" />
-              <div className="h-3.5 w-1/2 bg-[#f0f0f0] rounded" />
-              <div className="pt-2 border-t border-[#f0f0f0] flex items-center gap-3">
-                <div className="h-3 w-32 bg-[#f0f0f0] rounded" />
-                <div className="h-3 w-28 bg-[#f0f0f0] rounded" />
+              <div className="h-4 w-3/4 bg-[#e8eef7] rounded" />
+              <div className="h-3.5 w-1/2 bg-[#e8eef7] rounded" />
+              <div className="pt-2 border-t border-[#e8eef7] flex items-center gap-3">
+                <div className="h-3 w-32 bg-[#e8eef7] rounded" />
+                <div className="h-3 w-28 bg-[#e8eef7] rounded" />
               </div>
             </div>
           ))}
@@ -738,16 +747,16 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Clean Release View when no active CVEs affect selected version and NOT searching */}
       {data && versionFilter === 'selected' && activeList.length === 0 && !hasSearchQuery && !loading && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
           <div className="w-14 h-14 rounded-full bg-[#eefcf3] text-[#17a45c] flex items-center justify-center mb-3">
             <ShieldCheck className="h-7 w-7" />
           </div>
-          <h4 className="font-sans font-bold text-[18px] text-[#1a1a1a]">
+          <h4 className="font-sans font-bold text-[18px] text-[#0f172a]">
             Release v{activeVersion} is Clean
           </h4>
-          <p className="text-[13px] text-[#6e6e6e] max-w-[480px] mt-1.5 leading-relaxed">
+          <p className="text-[13px] text-[#475569] max-w-[480px] mt-1.5 leading-relaxed">
             Zero known security advisories or active CVEs directly affect version{' '}
-            <strong className="font-mono text-[#1a1a1a]">v{activeVersion}</strong>.
+            <strong className="font-mono text-[#0f172a]">v{activeVersion}</strong>.
           </p>
 
           {/* Historical discovery hint / button */}
@@ -761,7 +770,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               >
                 Show All {allHistoricalList.length} Past Vulnerabilities
               </KeycapButton>
-              <span className="text-[12px] text-[#555a64]">
+              <span className="text-[12px] text-[#475569]">
                 ({allHistoricalList.length} historical CVEs patched in this or prior releases)
               </span>
             </div>
@@ -771,7 +780,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Active Search Result Notification Banner */}
       {!loading && hasSearchQuery && filteredAdvisories.length > 0 && (
-        <div className="px-4 py-2.5 bg-[#eff6ff] border border-[#bfdbfe] rounded-[12px] flex items-center justify-between text-[12px] text-[#1d53c6]">
+        <div className="px-4 py-2.5 bg-[#eff6ff] border border-[#bfdbfe] rounded-[12px] flex items-center justify-between text-[12px] text-[#0558d6]">
           <div className="flex items-center gap-2">
             <Search className="h-3.5 w-3.5" />
             <span>
@@ -790,15 +799,15 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Empty Search Result State */}
       {!loading && hasSearchQuery && filteredAdvisories.length === 0 && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="w-12 h-12 rounded-full bg-[#f4f4f4] text-[#555a64] flex items-center justify-center mb-3">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-8 text-center flex flex-col items-center justify-center shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="w-12 h-12 rounded-full bg-[#f1f6fd] text-[#475569] flex items-center justify-center mb-3">
             <Search className="h-6 w-6" />
           </div>
-          <h4 className="font-sans font-bold text-[16px] text-[#1a1a1a]">
+          <h4 className="font-sans font-bold text-[16px] text-[#0f172a]">
             No advisories matching &ldquo;{cveSearchQuery}&rdquo;
           </h4>
-          <p className="text-[13px] text-[#6e6e6e] max-w-[420px] mt-1.5 leading-relaxed">
-            Neither active nor historical security records for <strong className="font-mono text-[#1a1a1a]">{packageName}</strong> match this identifier or keyword.
+          <p className="text-[13px] text-[#475569] max-w-[420px] mt-1.5 leading-relaxed">
+            Neither active nor historical security records for <strong className="font-mono text-[#0f172a]">{packageName}</strong> match this identifier or keyword.
           </p>
           <div className="mt-4">
             <KeycapButton
@@ -820,7 +829,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
             <span>
               Showing <strong className="text-[#0f172a]">{filteredAdvisories.length}</strong> of {scopedList.length} security advisories
               {severityFilter !== 'all' && (
-                <span className="ml-1 text-[#1d53c6] font-semibold">({severityFilter.toUpperCase()} only)</span>
+                <span className="ml-1 text-[#0558d6] font-semibold">({severityFilter.toUpperCase()} only)</span>
               )}
             </span>
             {(severityFilter !== 'all' || scope !== 'all') && (
@@ -830,7 +839,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                   setSeverityFilter('all');
                   setScope('all');
                 }}
-                className="text-[#1d53c6] hover:underline font-semibold cursor-pointer"
+                className="text-[#0558d6] hover:underline font-semibold cursor-pointer"
               >
                 Clear Filters
               </button>
@@ -852,10 +861,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
               return (
                 <div
                   key={`${advisory.id}-${advisory.component}`}
-                  className="bg-white border border-[#e8e8e8] hover:border-[#bfdbfe] rounded-[18px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-150"
+                  className="bg-white/92 backdrop-blur-xl border border-white/90 hover:border-[#93c5fd] rounded-[18px] p-5 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-150"
                 >
                   {/* Top Bar with ID, Status Badge, Component Tag, Severity, and External Links */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#f0f0f0]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e8eef7]">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant={getSeverityBadgeVariant(advisory.severity)}>
                         {advisory.severity}
@@ -879,10 +888,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                           advisory.id.toLowerCase().includes(cveSearchQuery.trim().toLowerCase());
                         return (
                           <span
-                            className={`font-mono text-[14px] font-bold px-1.5 py-0.5 rounded-md transition-all duration-150 ${
+                            className={`font-mono text-[14px] font-bold px-1.5 py-0.5 rounded-md transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-150 ${
                               isPrimaryMatch
-                                ? 'bg-[#eff6ff] text-[#1d53c6] ring-1.5 ring-[#38bdf8] shadow-xs'
-                                : 'text-[#1a1a1a]'
+                                ? 'bg-[#eff6ff] text-[#0558d6] ring-1.5 ring-[#38bdf8] shadow-xs'
+                                : 'text-[#0f172a]'
                             }`}
                           >
                             <HighlightMatch
@@ -902,10 +911,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         return (
                           <span
                             key={alias}
-                            className={`font-mono text-[11px] px-1.5 py-0.5 rounded transition-all duration-150 ${
+                            className={`font-mono text-[11px] px-1.5 py-0.5 rounded transition-[background-color,border-color,color,box-shadow,transform,opacity] duration-150 ${
                               isAliasMatch
-                                ? 'bg-[#fef9c3] text-[#713f12] ring-1.5 ring-[#eab308] font-bold shadow-xs animate-in zoom-in-95'
-                                : 'text-[#555a64] bg-[#f4f4f4]'
+                                ? 'bg-[#fef9c3] text-[#713f12] ring-1.5 ring-[#eab308] font-bold shadow-xs'
+                                : 'text-[#475569] bg-[#f1f6fd]'
                             }`}
                           >
                             <HighlightMatch
@@ -919,7 +928,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
                       {/* Component Origin Badge */}
                       {advisory.component && advisory.component !== packageName && (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#eff6ff] text-[#1d53c6] border border-[#bfdbfe]">
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#eff6ff] text-[#0558d6] border border-[#bfdbfe]">
                           {advisory.componentType === 'parent-ecosystem' ? 'Core Monorepo: ' : 'Dependency: '}
                           <code className="font-mono font-bold">{advisory.component}</code>
                         </span>
@@ -933,7 +942,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                           href={nvdUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
+                          className="text-[#0558d6] hover:underline flex items-center gap-0.5 font-medium"
                           title="View on National Vulnerability Database (NVD NIST)"
                         >
                           NVD Record <ArrowUpRight className="h-3 w-3" />
@@ -944,7 +953,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                           href={githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
+                          className="text-[#0558d6] hover:underline flex items-center gap-0.5 font-medium"
                           title="View on GitHub Advisory Database"
                         >
                           GitHub Advisory <ArrowUpRight className="h-3 w-3" />
@@ -954,7 +963,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                         href={osvUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#1d53c6] hover:underline flex items-center gap-0.5 font-medium"
+                        className="text-[#0558d6] hover:underline flex items-center gap-0.5 font-medium"
                         title="View on OSV.dev (Open Source Vulnerabilities)"
                       >
                         OSV Report <ArrowUpRight className="h-3 w-3" />
@@ -964,31 +973,31 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
                   {/* Title & Summary with realtime query highlight */}
                   <div className="mt-3">
-                    <h4 className="font-sans font-semibold text-[15px] text-[#1a1a1a]">
+                    <h4 className="font-sans font-semibold text-[15px] text-[#0f172a]">
                       <HighlightMatch text={advisory.title} query={cveSearchQuery} />
                     </h4>
                     {advisory.summary && advisory.title !== advisory.summary && (
-                      <p className="text-[13px] text-[#6e6e6e] mt-1.5 leading-relaxed line-clamp-2">
+                      <p className="text-[13px] text-[#475569] mt-1.5 leading-relaxed line-clamp-2">
                         <HighlightMatch text={advisory.summary} query={cveSearchQuery} />
                       </p>
                     )}
                   </div>
 
                   {/* Details grid: Affected version range, fixed version, published date */}
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#fbfbfb] p-3.5 rounded-[12px] border border-[#f0f0f0] text-[12px]">
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#f8fbff] p-3.5 rounded-[12px] border border-[#e8eef7] text-[12px]">
                     <div>
-                      <span className="text-[#555a64] block font-medium">Affected Version Range:</span>
+                      <span className="text-[#475569] block font-medium">Affected Version Range:</span>
                       <span className="font-mono text-[#e5484d] font-semibold">{advisory.affectedRange || 'Unspecified'}</span>
                     </div>
                     <div>
-                      <span className="text-[#555a64] block font-medium">Patched / Fixed Version:</span>
+                      <span className="text-[#475569] block font-medium">Patched / Fixed Version:</span>
                       <span className="font-mono text-[#17a45c] font-semibold">
                         {advisory.fixedVersion ? `>= ${advisory.fixedVersion}` : 'Consult advisory notes'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#555a64] block font-medium">Published Date:</span>
-                      <span className="text-[#1a1a1a]">
+                      <span className="text-[#475569] block font-medium">Published Date:</span>
+                      <span className="text-[#0f172a]">
                         {advisory.publishedAt ? new Date(advisory.publishedAt).toLocaleDateString() : 'N/A'}
                       </span>
                     </div>
@@ -996,21 +1005,21 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
                   {/* Expanded Technical Details / Disclosure with realtime query highlight */}
                   {isExpanded && advisory.details && (
-                    <div className="mt-4 p-4 bg-[#fafafa] border border-[#e8e8e8] rounded-[12px] text-[12px] font-mono leading-relaxed text-[#333333] whitespace-pre-wrap max-h-80 overflow-y-auto">
+                    <div className="mt-4 p-4 bg-[#f8fbff] border border-[#dce7f5] rounded-[12px] text-[12px] font-mono leading-relaxed text-[#333333] whitespace-pre-wrap max-h-80 overflow-y-auto">
                       <HighlightMatch text={advisory.details} query={cveSearchQuery} />
                     </div>
                   )}
 
                   {/* Footer with Remediation & Expand Toggle */}
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#f4f4f4] text-[12px]">
-                    <div className="flex items-center gap-1.5 text-[#6e6e6e]">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#f1f6fd] text-[12px]">
+                    <div className="flex items-center gap-1.5 text-[#475569]">
                       {advisory.component && advisory.component !== packageName ? (
                         <span>
-                          Originates in upstream <strong className="font-mono text-[#1a1a1a]">{advisory.component}</strong> ({advisory.componentType === 'parent-ecosystem' ? 'core monorepo framework' : 'dependency'})
+                          Originates in upstream <strong className="font-mono text-[#0f172a]">{advisory.component}</strong> ({advisory.componentType === 'parent-ecosystem' ? 'core monorepo framework' : 'dependency'})
                         </span>
                       ) : (
                         <span>
-                          Direct advisory for <strong className="font-mono text-[#1a1a1a]">{packageName}</strong>
+                          Direct advisory for <strong className="font-mono text-[#0f172a]">{packageName}</strong>
                         </span>
                       )}
                     </div>
@@ -1019,7 +1028,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
                       <button
                         type="button"
                         onClick={() => setExpandedAdvisoryId(isExpanded ? null : advisory.id)}
-                        className="text-[#1d53c6] hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
+                        className="text-[#0558d6] hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
                       >
                         {isExpanded ? 'Hide technical write-up' : 'View disclosure write-up'}
                       </button>
@@ -1034,10 +1043,10 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Zero State if filtered query has no hits (when not showing clean release card) */}
       {data && filteredAdvisories.length === 0 && (versionFilter !== 'selected' || activeList.length > 0) && !loading && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-8 text-center flex flex-col items-center justify-center">
           <Shield className="h-8 w-8 text-[#17a45c] mb-2" />
-          <h4 className="font-sans font-bold text-[16px] text-[#1a1a1a]">No Matching Advisories Found</h4>
-          <p className="text-[13px] text-[#6e6e6e] max-w-[440px] mt-1">
+          <h4 className="font-sans font-bold text-[16px] text-[#0f172a]">No Matching Advisories Found</h4>
+          <p className="text-[13px] text-[#475569] max-w-[440px] mt-1">
             {cveSearchQuery
               ? `No vulnerabilities match query "${cveSearchQuery}".`
               : 'Zero security advisories found under this filter or scope.'}

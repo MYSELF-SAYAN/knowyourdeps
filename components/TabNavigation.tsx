@@ -1,36 +1,29 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TabType } from '@/lib/types';
-import {
-  FileText,
-  BarChart3,
-  Shield,
-  Boxes,
-  Activity,
-} from 'lucide-react';
+import { BookOpen, TrendingUp, ShieldAlert, Layers, Activity } from 'lucide-react';
 
 interface TabNavigationProps {
   currentTab: TabType;
 }
 
-const TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
-  { id: 'overview', label: 'Overview', icon: FileText },
-  { id: 'history', label: 'Stats & Metrics', icon: BarChart3 },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'ecosystem', label: 'Ecosystem', icon: Boxes },
+const TABS: { id: TabType; label: string; icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }[] = [
+  { id: 'overview', label: 'Overview', icon: BookOpen },
+  { id: 'history', label: 'Stats & Metrics', icon: TrendingUp },
+  { id: 'security', label: 'Security', icon: ShieldAlert },
+  { id: 'ecosystem', label: 'Ecosystem', icon: Layers },
   { id: 'health', label: 'Health', icon: Activity },
 ];
 
 export function TabNavigation({ currentTab }: TabNavigationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const navRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
-  // Normalize legacy tab names ('dependencies' and 'alternatives') to 'ecosystem'
-  const normalizedTab = (currentTab === 'dependencies' || currentTab === 'alternatives') ? 'ecosystem' : currentTab;
+  // Normalize old tab params so indicator maps cleanly
+  const normalizedTab: TabType =
+    currentTab === 'dependencies' || currentTab === 'alternatives' ? 'ecosystem' : currentTab;
 
   const handleTabChange = (tabId: TabType) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -38,52 +31,32 @@ export function TabNavigation({ currentTab }: TabNavigationProps) {
     router.push(`/?${params.toString()}`);
   };
 
-  // Apple-style sliding indicator calculation
-  useEffect(() => {
-    if (!navRef.current) return;
-    const activeEl = navRef.current.querySelector<HTMLButtonElement>(`[data-tab-id="${normalizedTab}"]`);
-    if (activeEl) {
-      setIndicatorStyle({
-        left: activeEl.offsetLeft,
-        width: activeEl.offsetWidth,
-      });
-    }
-  }, [normalizedTab]);
-
   return (
-    <div className="w-full overflow-x-auto pb-1 scrollbar-none">
+    <div className="w-full overflow-x-auto scrollbar-none">
       <nav
-        ref={navRef}
-        className="relative flex items-center gap-1 border-b border-[#e8e8e8] pb-1"
+        aria-label="Package report tabs"
+        className="inline-flex min-w-full sm:min-w-0 items-center gap-1 rounded-2xl bg-white/92 backdrop-blur-xl border border-white/90 p-1.5 shadow-[0_12px_32px_-12px_rgba(3,28,77,0.16)]"
       >
-        {/* Animated Sliding Active Indicator (Apple-style continuous spatial feedback) */}
-        {indicatorStyle.width > 0 && (
-          <div
-            className="absolute bottom-0 h-[2.5px] bg-[#1d53c6] rounded-full pointer-events-none transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]"
-            style={{
-              left: `${indicatorStyle.left}px`,
-              width: `${indicatorStyle.width}px`,
-            }}
-          />
-        )}
-
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = normalizedTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
               data-tab-id={tab.id}
+              aria-current={isActive ? 'page' : undefined}
               onClick={() => handleTabChange(tab.id)}
-              className={`relative flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-[13.5px] font-semibold select-none cursor-pointer rounded-t-[10px] transition-all duration-150 active:scale-[0.96] active:translate-y-[1px] ${
+              className={`relative flex items-center gap-2 whitespace-nowrap px-3.5 py-2 text-[13px] font-semibold select-none cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] ${
                 isActive
-                  ? 'text-[#1d53c6] bg-white'
-                  : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc]'
+                  ? 'bg-[#0558d6] text-white shadow-[0_4px_12px_-2px_rgba(5,88,214,0.42)]'
+                  : 'text-[#334155] hover:text-[#0f172a] hover:bg-[#eff6ff]'
               }`}
             >
               <Icon
-                className={`h-4 w-4 transition-transform duration-150 ${
-                  isActive ? 'text-[#1d53c6] scale-110' : 'text-[#94a3b8]'
+                aria-hidden={true}
+                className={`h-4 w-4 shrink-0 ${
+                  isActive ? 'text-white' : 'text-[#475569]'
                 }`}
               />
               <span>{tab.label}</span>

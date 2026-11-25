@@ -16,16 +16,11 @@ import { ComparisonModal } from '@/components/ComparisonModal';
 import { Footer } from '@/components/Footer';
 import { KeycapButton } from '@/components/ui/KeycapButton';
 import {
-  ShieldAlert,
-  Layers,
-  TrendingUp,
-  Shuffle,
   AlertTriangle,
-  Terminal,
   ArrowRight,
   Check,
   Copy,
-  Sparkles,
+  Terminal,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -91,11 +86,24 @@ function DashboardContent() {
 
   const activeVersion = versionParam || packageData?.latestVersion || 'latest';
 
+  const openCompareModalDirect = () => {
+    if (packageName) {
+      setCompareTargets([{ ecosystem, name: packageName, version: activeVersion !== 'latest' ? activeVersion : undefined }]);
+    } else {
+      setCompareTargets([
+        { ecosystem: 'npm', name: 'axios' },
+        { ecosystem: 'npm', name: 'got' },
+      ]);
+    }
+    setIsCompareOpen(true);
+  };
+
   // Handle URL compare query param trigger
   useEffect(() => {
     if (searchParams.get('compare') === 'true' || searchParams.get('compare') === '1') {
       openCompareModalDirect();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleSelectTab = (tab: TabType) => {
@@ -118,116 +126,93 @@ function DashboardContent() {
     setIsCompareOpen(true);
   };
 
-  const openCompareModalDirect = () => {
-    if (packageName) {
-      setCompareTargets([{ ecosystem, name: packageName, version: activeVersion !== 'latest' ? activeVersion : undefined }]);
-    } else {
-      setCompareTargets([
-        { ecosystem: 'npm', name: 'axios' },
-        { ecosystem: 'npm', name: 'got' },
-      ]);
-    }
-    setIsCompareOpen(true);
-  };
-
   const POPULAR_PACKAGES: Record<Ecosystem, string[]> = {
-    npm: ['axios', 'express', 'react', 'zod', 'next', 'fastify', 'lodash', 'tailwindcss'],
-    pypi: ['requests', 'fastapi', 'flask', 'pydantic', 'httpx', 'pandas', 'numpy', 'pytest'],
+    npm: ['axios', 'express', 'react', 'zod', 'next', 'lodash'],
+    pypi: ['requests', 'fastapi', 'flask', 'pydantic', 'httpx', 'pytest'],
   };
 
   return (
     <div
-      className={`min-h-screen flex flex-col ${
-        packageName ? 'bg-[#f8fafc] lg:h-screen lg:overflow-hidden' : 'bg-transparent'
+      className={`min-h-screen flex flex-col bg-transparent ${
+        packageName ? 'lg:h-screen lg:overflow-hidden' : ''
       } text-[#0f172a] relative`}
     >
-      {/* Smokey Sky Atmosphere Aura Spanning Whole Page (tasteskill.dev design system) */}
-      {!packageName && (
-        <div className="sky-full-page-bg">
-          <div className="sky-clouds-overlay" />
-        </div>
-      )}
+      {/* Unified Supaste-inspired Sky Atmosphere Spanning Entire Workspace, Landing & Docs */}
+      <div className="sky-full-page-bg" aria-hidden="true">
+        <div className="sky-clouds-overlay" />
+      </div>
 
-      {/* Centered Floating Animated Navbar */}
-      <header className="sticky top-3.5 z-40 w-full flex justify-center px-4 pointer-events-none">
+      {/* Centered Flush Apple Notch Header */}
+      <header className="sticky top-0 z-40 w-full flex justify-center px-3 sm:px-6 pointer-events-none">
         <Navbar onOpenCompare={openCompareModalDirect} />
       </header>
 
-      {/* When package view is active: Pinned Search Bar with proper breathing space from floating navbar */}
+      {/* When package view is active: Search Bar sitting gracefully along the sky horizon */}
       {packageName && (
-        <div className="shrink-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-6 pb-3 z-20">
+        <div className="relative shrink-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-3.5 z-30">
           <SearchBar inputRef={searchInputRef} compact />
         </div>
       )}
 
-      {/* Package View Mode: Fixed Workspace (Sidebox & Tabs stay still, only contents scroll) */}
+      {/* Package View Mode: Fixed Workspace (Sidebar & Tabs stay still, content scrolls cleanly) */}
       {packageName ? (
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 min-h-0 lg:overflow-hidden flex flex-col">
-          {/* Loading state: High-Fidelity Skeleton Package Workspace */}
+        <main id="main-content" className="relative z-10 flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 min-h-0 lg:overflow-hidden flex flex-col">
+          {/* Loading state: Sky-Frosted Skeleton Workspace */}
           {loading && !packageData && (
-            <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-start gap-6 lg:overflow-hidden py-1 animate-in fade-in duration-150">
+            <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-start gap-6 lg:overflow-hidden py-1">
               {/* Left Column: Sidebar Skeleton */}
-              <div className="w-full lg:w-[300px] shrink-0 bg-white border border-[#e8e8e8] rounded-[20px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-4">
-                {/* Badges placeholder */}
+              <div className="w-full lg:w-[300px] shrink-0 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-5 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.16)] flex flex-col gap-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="h-5 w-12 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
-                  <div className="h-5 w-16 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
-                  <div className="h-5 w-14 rounded-[6px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-5 w-12 rounded-md bg-[#eef5ff] animate-pulse" />
+                  <div className="h-5 w-16 rounded-md bg-[#eef5ff] animate-pulse" />
+                  <div className="h-5 w-14 rounded-md bg-[#eef5ff] animate-pulse" />
                 </div>
-                {/* Name & description */}
                 <div>
-                  <div className="h-8 w-44 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                  <div className="h-8 w-44 rounded-lg bg-[#eef5ff] animate-pulse" />
                   <div className="mt-2.5 space-y-1.5">
-                    <div className="h-3.5 w-full rounded bg-[#f0f0f0] animate-pulse" />
-                    <div className="h-3.5 w-5/6 rounded bg-[#f0f0f0] animate-pulse" />
-                    <div className="h-3.5 w-3/4 rounded bg-[#f0f0f0] animate-pulse" />
+                    <div className="h-3.5 w-full rounded bg-[#f1f6fd] animate-pulse" />
+                    <div className="h-3.5 w-5/6 rounded bg-[#f1f6fd] animate-pulse" />
+                    <div className="h-3.5 w-3/4 rounded bg-[#f1f6fd] animate-pulse" />
                   </div>
                 </div>
-                {/* Security pill skeleton */}
-                <div className="h-8 rounded-[10px] bg-[#f0f0f0] animate-pulse" />
-                {/* Install box skeleton */}
-                <div className="h-10 rounded-[12px] bg-[#f0f0f0] animate-pulse" />
-                {/* Links */}
-                <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
-                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
-                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
-                  <div className="h-7 rounded-[8px] bg-[#f0f0f0] animate-pulse" />
+                <div className="h-8 rounded-[10px] bg-[#f1f6fd] animate-pulse" />
+                <div className="h-10 rounded-[12px] bg-[#f1f6fd] animate-pulse" />
+                <div className="space-y-2 pt-2 border-t border-[#e8eef7]">
+                  <div className="h-7 rounded-[8px] bg-[#f1f6fd] animate-pulse" />
+                  <div className="h-7 rounded-[8px] bg-[#f1f6fd] animate-pulse" />
+                  <div className="h-7 rounded-[8px] bg-[#f1f6fd] animate-pulse" />
                 </div>
               </div>
 
               {/* Right Column: Tab Navigation & Content Skeleton */}
               <div className="flex-1 min-w-0 w-full flex flex-col lg:h-full lg:overflow-hidden">
-                {/* Pinned Tab bar skeleton */}
                 <div className="shrink-0 flex items-center gap-2 pb-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  {Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
-                      className="h-9 w-24 rounded-[12px] bg-white border border-[#e8e8e8] animate-pulse"
+                      className="h-9 w-24 rounded-[12px] bg-white/92 border border-white/90 animate-pulse"
                     />
                   ))}
                 </div>
 
-                {/* Content body skeleton */}
                 <div className="flex-1 min-h-0 space-y-4 pt-1">
-                  {/* 4 Stat Cards */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
-                        className="h-24 bg-white border border-[#e8e8e8] rounded-[18px] p-4 animate-pulse flex flex-col justify-between"
+                        className="h-24 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] p-4 animate-pulse flex flex-col justify-between"
                       >
-                        <div className="h-3 w-16 bg-[#f0f0f0] rounded" />
-                        <div className="h-7 w-24 bg-[#f0f0f0] rounded" />
+                        <div className="h-3 w-16 bg-[#eef5ff] rounded" />
+                        <div className="h-7 w-24 bg-[#eef5ff] rounded" />
                       </div>
                     ))}
                   </div>
 
-                  {/* Main section card shimmer */}
-                  <div className="h-[420px] bg-white border border-[#e8e8e8] rounded-[20px] p-6 animate-pulse flex flex-col gap-4">
-                    <div className="h-6 w-48 bg-[#f0f0f0] rounded-[8px]" />
-                    <div className="h-4 w-full bg-[#f0f0f0] rounded" />
-                    <div className="h-4 w-5/6 bg-[#f0f0f0] rounded" />
-                    <div className="flex-1 bg-[#fafafa] rounded-[14px] border border-[#f0f0f0]" />
+                  <div className="h-[420px] bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-6 animate-pulse flex flex-col gap-4">
+                    <div className="h-6 w-48 bg-[#eef5ff] rounded-lg" />
+                    <div className="h-4 w-full bg-[#f1f6fd] rounded" />
+                    <div className="h-4 w-5/6 bg-[#f1f6fd] rounded" />
+                    <div className="flex-1 bg-[#f8fbff] rounded-[14px] border border-[#e8eef7]" />
                   </div>
                 </div>
               </div>
@@ -236,18 +221,18 @@ function DashboardContent() {
 
           {/* Error state */}
           {error && !loading && (
-            <div className="bg-white border border-[#fcccd1] rounded-[20px] p-8 text-center flex flex-col items-center my-auto">
+            <div className="bg-white/95 backdrop-blur-xl border border-[#fcccd1] rounded-[20px] p-8 text-center flex flex-col items-center my-auto shadow-[0_14px_38px_-14px_rgba(3,28,77,0.16)]">
               <div className="w-14 h-14 rounded-full bg-[#feecee] text-[#e5484d] flex items-center justify-center mb-4">
-                <AlertTriangle className="h-7 w-7" />
+                <AlertTriangle className="h-7 w-7" aria-hidden="true" />
               </div>
-              <h3 className="font-sans font-bold text-[18px] text-[#1a1a1a]">Package Not Found</h3>
-              <p className="text-[13px] text-[#6e6e6e] max-w-[460px] mt-2 leading-relaxed">
+              <h1 className="font-display font-semibold text-[20px] text-[#0f172a]">Package Not Found</h1>
+              <p className="text-[13.5px] text-[#475569] max-w-[460px] mt-2 leading-relaxed">
                 {error}
               </p>
               <div className="mt-6 flex items-center gap-3">
                 <Link
                   href={`/?ecosystem=${ecosystem}`}
-                  className="px-4 py-2 bg-[#f4f4f4] hover:bg-[#e8e8e8] rounded-[10px] text-[13px] font-semibold text-[#1a1a1a] transition-colors"
+                  className="px-4 py-2 bg-[#f1f6fd] hover:bg-[#e2eeff] border border-[#dce7f5] rounded-[10px] text-[13px] font-semibold text-[#0f172a] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                 >
                   Back to Search
                 </Link>
@@ -256,7 +241,7 @@ function DashboardContent() {
                   size="sm"
                   onClick={() => {
                     const otherEco = ecosystem === 'npm' ? 'pypi' : 'npm';
-                    router.push(`/?ecosystem=${otherEco}&package=${packageName}&type=overview`);
+                    router.push(`/?ecosystem=${otherEco}&package=${encodeURIComponent(packageName)}&type=overview`);
                   }}
                 >
                   Try in {ecosystem === 'npm' ? 'PyPI' : 'npm'}
@@ -268,7 +253,7 @@ function DashboardContent() {
           {/* Package Loaded Workspace */}
           {packageData && !loading && (
             <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-start gap-6 lg:overflow-hidden py-1">
-              {/* Left Column: Sidebox (stays completely still) */}
+              {/* Left Column: Sidebox (stays still) */}
               <div className="w-full lg:w-[300px] shrink-0 lg:h-full lg:overflow-y-auto scrollbar-none pb-4">
                 <PackageSidebar
                   pkg={packageData}
@@ -279,13 +264,12 @@ function DashboardContent() {
 
               {/* Right Column: Pinned Tabs Bar + Scrollable Content Area */}
               <div className="flex-1 min-w-0 w-full flex flex-col lg:h-full lg:overflow-hidden">
-                {/* Pinned Tab Navigation (stays completely still) */}
-                <div className="shrink-0 bg-[#fcfcfc] z-10 pb-1">
+                <div className="shrink-0 z-10 pb-2">
                   <TabNavigation currentTab={currentTab} />
                 </div>
 
-                {/* Scrollable Tab Content Container (JUST CONTENTS SCROLL) */}
-                <div className="flex-1 min-h-0 lg:overflow-y-auto pt-3 pb-8 pr-1.5 scrollbar-thin">
+                {/* Scrollable Tab Content Container */}
+                <div className="flex-1 min-h-0 lg:overflow-y-auto pt-1 pb-8 pr-1.5 scrollbar-thin overscroll-contain">
                   <div key={currentTab} className="min-h-[400px] animate-tab-in">
                     {currentTab === 'overview' && (
                       <OverviewTab
@@ -333,102 +317,84 @@ function DashboardContent() {
           )}
         </main>
       ) : (
-        /* Landing View: Taste Skill Inspired Smokey Sky Aesthetic with Immense Breathing Space */
+        /* Uncluttered Sky Landing View (Supaste-inspired) */
         <>
-          <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 desk:px-8 pt-20 sm:pt-28 desk:pt-32 pb-32 sm:pb-40 flex flex-col items-center justify-center text-center relative z-10 animate-in fade-in duration-300">
-            {/* Pill badge with pulse dot in taste-skill aesthetic */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-white/80 text-[#1d53c6] font-sans font-semibold text-[11px] uppercase tracking-wider mb-8 shadow-[0_2px_12px_rgba(14,165,233,0.12)] select-none hover:-translate-y-0.5 transition-transform">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1d53c6] shadow-[0_0_8px_#38bdf8]" />
-              <span>Package Intelligence &amp; Supply Chain Audit</span>
+          <main id="main-content" className="flex-1 w-full max-w-[920px] mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-16 sm:pb-24 flex flex-col items-center justify-center text-center relative z-10">
+            {/* Subtle Eyebrow Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white font-sans font-medium text-[12px] tracking-wide mb-7 select-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#7dd3fc]" aria-hidden="true" />
+              <span>OSV.dev · deps.dev v3 · OpenSSF Scorecard</span>
             </div>
 
-            {/* Single Line Headline with neo-arcade pixel display font */}
-            <h1 className="font-display font-bold text-[36px] sm:text-[54px] desk:text-[68px] leading-[1.05] tracking-tight text-[#0f172a] whitespace-normal sm:whitespace-nowrap max-w-5xl">
-              Audit packages before you run <span className="text-white bg-[#1d53c6] px-3 py-0.5 rounded-[12px] inline-block shadow-[0_4px_16px_rgba(29,83,198,0.35)]">install.</span>
+            {/* Hero Display Headline (Host Grotesk + Instrument Serif italic accent) */}
+            <h1 className="font-display font-semibold text-[40px] sm:text-[58px] desk:text-[68px] leading-[1.03] tracking-[-0.035em] text-white max-w-4xl text-balance [text-shadow:0_2px_20px_rgba(3,28,77,0.28)]">
+              Inspect every dependency{' '}
+              <span className="font-serif-accent italic font-normal text-[#dff3ff] tracking-[-0.01em]">
+                before install.
+              </span>
             </h1>
 
-            {/* Lede sentence with generous breathing space */}
-            <p className="mt-5 text-[15px] sm:text-[17px] text-[#334155] max-w-xl mx-auto leading-relaxed">
-              Real-time vulnerability audits, supply chain dependency solver, download velocity trends, and OpenSSF scorecards across npm &amp; PyPI.
+            {/* Concise Lede */}
+            <p className="mt-5 text-[15px] sm:text-[17px] text-[#eaf4ff] max-w-xl mx-auto leading-relaxed">
+              Check CVEs across direct and transitive trees, verify OpenSSF health, and resolve conflict-free upgrades for{' '}
+              <span translate="no">npm</span> and <span translate="no">PyPI</span>.
             </p>
 
-            {/* Centralized Search Bar with tactile depth */}
-            <div className="mt-10 sm:mt-12 w-full max-w-2xl">
+            {/* Primary Search Bar */}
+            <div className="mt-9 sm:mt-10 w-full max-w-2xl">
               <SearchBar inputRef={searchInputRef} />
             </div>
 
-            {/* Popular packages quick pills with refined sans label */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-2xl text-[12px]">
-              <span className="font-sans font-semibold text-[11px] text-[#475569] uppercase tracking-wider mr-1">
-                Trending {ecosystem.toUpperCase()}:
+            {/* Quick-Pick Trending Packages */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 max-w-2xl text-[12px]">
+              <span className="font-sans font-semibold text-[11px] text-white [text-shadow:0_1px_6px_rgba(3,28,77,0.3)] uppercase tracking-wider mr-1">
+                Trending <span translate="no">{ecosystem.toUpperCase()}</span>
               </span>
               {POPULAR_PACKAGES[ecosystem].map((pkg) => (
                 <Link
                   key={pkg}
-                  href={`/?ecosystem=${ecosystem}&package=${pkg}&type=overview`}
-                  className="font-mono bg-white/85 backdrop-blur-sm border border-white/80 hover:border-[#38bdf8] hover:text-[#1d53c6] hover:bg-white px-3.5 py-1 rounded-full text-[#334155] transition-all duration-180 hover:-translate-y-0.5 hover:shadow-xs active:scale-[0.96]"
+                  href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(pkg)}&type=overview`}
+                  translate="no"
+                  className="font-mono bg-white/92 hover:bg-white border border-white text-[#0f172a] font-medium px-3 py-1 rounded-full shadow-[0_4px_12px_-4px_rgba(3,28,77,0.2)] transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                 >
                   {pkg}
                 </Link>
               ))}
             </div>
 
-            {/* Restrained Anti-Slop AI Agent & MCP Integration Indication */}
-            <div className="mt-12 w-full max-w-2xl bg-white/85 backdrop-blur-xl border border-white/80 rounded-[22px] p-5 sm:p-6 shadow-[0_8px_32px_rgba(14,165,233,0.12)] hover:border-[#bfdbfe] transition-all text-left">
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-[#f1f5f9]">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-sans font-bold text-[11px] uppercase tracking-wider text-emerald-700">
-                    Live MCP Cloud Server Online
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono font-medium text-[#475569] bg-[#f8fafc] px-2.5 py-0.5 rounded-full border border-[#e2e8f0]">
-                  skills.sh ready
-                </span>
-              </div>
-
-              <div className="mt-3.5">
-                <h3 className="text-[15px] font-bold text-[#0f172a] flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-[#1d53c6]" />
-                  <span>Use directly inside Cursor, Claude, Antigravity &amp; VS Code</span>
-                </h3>
-                <p className="mt-1 text-[13px] text-[#64748b] leading-relaxed">
-                  Audit direct and transitive dependencies, check exact semver bounds, and generate compliance reports directly from your AI agent chat.
-                </p>
-              </div>
-
-              {/* Quick CLI copy box & Link to Docs */}
-              <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                <div className="flex-1 flex items-center justify-between bg-[#0f172a] text-[#f8fafc] px-3.5 py-2 rounded-[12px] font-mono text-[12px] border border-[#1e293b] select-all">
-                  <span className="truncate text-[#93c5fd]">
-                    <span className="text-[#64748b] mr-1.5">$</span>npx skills add MYSELF-SAYAN/knowyourdeps
-                  </span>
+            {/* Minimal, Uncluttered AI Agent Skill & MCP Bar */}
+            <div className="mt-10 w-full max-w-xl">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-[#070b14]/90 backdrop-blur-xl text-white border border-white/15 rounded-2xl p-2 shadow-[0_18px_48px_-14px_rgba(3,28,77,0.38)]">
+                <div className="flex items-center justify-between gap-2 px-3 py-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Terminal className="w-3.5 h-3.5 text-[#38bdf8] shrink-0" aria-hidden="true" />
+                    <code className="font-mono text-[12px] text-[#bae6fd] truncate" translate="no">
+                      <span className="text-[#64748b] mr-1.5 select-none">$</span>npx skills add MYSELF-SAYAN/knowyourdeps
+                    </code>
+                  </div>
                   <button
                     type="button"
                     onClick={copySkillCmd}
-                    className="ml-2 p-1 rounded-md text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-                    title="Copy install command"
+                    aria-label="Copy skill install command"
+                    className="p-1.5 rounded-lg text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
                   >
                     {copiedSkill ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-400" />
+                      <Check className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
                     ) : (
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-3.5 w-3.5" aria-hidden="true" />
                     )}
                   </button>
                 </div>
 
                 <Link
                   href="/docs"
-                  className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-[12px] bg-[#1d53c6] hover:bg-[#19409b] text-white text-[12px] font-semibold transition-all hover:-translate-y-0.5 active:scale-[0.98] shadow-xs shrink-0 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#087cf8] hover:bg-[#1a87f9] text-white text-[12.5px] font-semibold transition-[background-color,transform] duration-150 active:scale-[0.98] shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
                 >
-                  <span>Docs &amp; Setup</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span>MCP Setup</span>
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </div>
             </div>
-
-            {/* Stageshow Interactive Miniature Product Showcase */}
-            {/* <LandingProductStage /> */}
           </main>
 
           {/* Global Unified Footer */}

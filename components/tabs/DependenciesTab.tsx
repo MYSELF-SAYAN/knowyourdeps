@@ -54,78 +54,78 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
       {/* Top Stat Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Direct Dependencies Card */}
-        <div className="p-5 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#6e6e6e]">
+        <div className="p-5 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569]">
             <span className="text-[12px] font-semibold uppercase tracking-wider">Direct Requirements</span>
-            <Layers className="h-4 w-4 text-[#a6a6a6]" />
+            <Layers className="h-4 w-4 text-[#64748b]" />
           </div>
           {loading ? (
-            <div className="my-2 h-8 w-20 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+            <div className="my-2 h-8 w-20 bg-[#e8eef7] rounded-[6px] animate-pulse" />
           ) : (
-            <div className="mt-2 font-display text-[28px] font-bold text-[#1a1a1a] tabular-nums">
+            <div className="mt-2 font-display text-[28px] font-bold text-[#0f172a] tabular-nums">
               {data?.totalDirect ?? 0}
             </div>
           )}
-          <p className="mt-1 text-[11px] text-[#555a64]">Declared directly in package manifest</p>
+          <p className="mt-1 text-[11px] text-[#475569]">Declared directly in package manifest</p>
         </div>
 
         {/* Transitive Dependencies Card */}
-        <div className="p-5 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#6e6e6e]">
+        <div className="p-5 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569]">
             <span className="text-[12px] font-semibold uppercase tracking-wider">Resolved Graph Nodes</span>
-            <GitFork className="h-4 w-4 text-[#a6a6a6]" />
+            <GitFork className="h-4 w-4 text-[#64748b]" />
           </div>
           {loading ? (
-            <div className="my-2 h-8 w-20 bg-[#f0f0f0] rounded-[6px] animate-pulse" />
+            <div className="my-2 h-8 w-20 bg-[#e8eef7] rounded-[6px] animate-pulse" />
           ) : (
-            <div className="mt-2 font-display text-[28px] font-bold text-[#1a1a1a] tabular-nums">
+            <div className="mt-2 font-display text-[28px] font-bold text-[#0f172a] tabular-nums">
               {data?.totalTransitive ?? data?.resolvedGraph?.length ?? 0}
             </div>
           )}
-          <p className="mt-1 text-[11px] text-[#555a64]">Resolved by deps.dev v3 solver</p>
+          <p className="mt-1 text-[11px] text-[#475569]">Resolved by deps.dev v3 solver</p>
         </div>
 
         {/* Tree Complexity / Footprint */}
-        <div className="p-5 bg-white border border-[#e8e8e8] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#6e6e6e]">
+        <div className="p-5 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569]">
             <span className="text-[12px] font-semibold uppercase tracking-wider">Dependency Health</span>
             <CheckCircle2 className="h-4 w-4 text-[#17a45c]" />
           </div>
-          <div className="mt-2 text-[18px] font-bold text-[#1a1a1a]">
+          <div className="mt-2 text-[18px] font-bold text-[#0f172a]">
             {loading
-              ? 'Evaluating...'
+              ? 'Evaluating…'
               : (data?.totalDirect ?? 0) === 0
               ? 'Zero-Dependency'
               : (data?.totalDirect ?? 0) < 5
               ? 'Lightweight'
               : 'Moderate Tree'}
           </div>
-          <p className="mt-1 text-[11px] text-[#555a64]">
+          <p className="mt-1 text-[11px] text-[#475569]">
             {(data?.totalDirect ?? 0) === 0 ? 'No external runtime footprint' : 'Tree size and blast radius'}
           </p>
         </div>
       </div>
 
       {/* Control bar: Search & Mode toggle */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white border border-[#e8e8e8] p-3 rounded-[16px]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/92 backdrop-blur-xl border border-white/90 p-3 rounded-[16px]">
         {/* View Mode Toggle */}
-        <div className="flex items-center bg-[#f4f4f4] p-1 rounded-[10px] self-start sm:self-auto">
+        <div className="flex items-center bg-[#f1f6fd] p-1 rounded-[10px] self-start sm:self-auto">
           <button
             onClick={() => setViewMode('requirements')}
-            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-[background-color,border-color,color,box-shadow,transform,opacity] ${
               viewMode === 'requirements'
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
+                ? 'bg-white text-[#0f172a] shadow-sm font-semibold'
+                : 'text-[#475569] hover:text-[#0f172a]'
             }`}
           >
             Direct Requirements ({data?.requirements.length ?? 0})
           </button>
           <button
             onClick={() => setViewMode('graph')}
-            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-[background-color,border-color,color,box-shadow,transform,opacity] ${
               viewMode === 'graph'
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold'
-                : 'text-[#6e6e6e] hover:text-[#1a1a1a]'
+                ? 'bg-white text-[#0f172a] shadow-sm font-semibold'
+                : 'text-[#475569] hover:text-[#0f172a]'
             }`}
           >
             Resolved Graph ({data?.resolvedGraph?.length ?? 0})
@@ -134,13 +134,13 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
 
         {/* Filter input */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#555a64]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#475569]" />
           <input
             type="text"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder="Filter dependencies by name..."
-            className="w-full pl-9 pr-3 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+            placeholder="Filter dependencies by name…"
+            className="w-full pl-9 pr-3 py-1.5 text-[12px] bg-[#f8fbff] border border-[#dce7f5] rounded-[8px] focus:outline-none focus:border-[#0558d6] focus:bg-white transition-colors"
           />
         </div>
       </div>
@@ -149,26 +149,26 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
       {loading && !data && (
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-14 bg-[#f4f4f4] rounded-[12px] animate-pulse" />
+            <div key={i} className="h-14 bg-[#f1f6fd] rounded-[12px] animate-pulse" />
           ))}
         </div>
       )}
 
       {/* Loading Skeleton */}
       {loading && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[16px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)] animate-in fade-in duration-150">
-          <div className="px-5 py-3.5 border-b border-[#f0f0f0] bg-[#fafafa] flex items-center justify-between">
-            <div className="h-4 w-28 bg-[#f0f0f0] rounded animate-pulse" />
-            <div className="h-4 w-32 bg-[#f0f0f0] rounded animate-pulse" />
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] overflow-hidden shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="px-5 py-3.5 border-b border-[#e8eef7] bg-[#f8fbff] flex items-center justify-between">
+            <div className="h-4 w-28 bg-[#e8eef7] rounded animate-pulse" />
+            <div className="h-4 w-32 bg-[#e8eef7] rounded animate-pulse" />
           </div>
-          <div className="divide-y divide-[#f0f0f0] p-2 space-y-2">
+          <div className="divide-y divide-[#e8eef7] p-2 space-y-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="px-4 py-3 flex items-center justify-between animate-pulse">
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-36 bg-[#f0f0f0] rounded" />
-                  <div className="h-4 w-10 bg-[#f0f0f0] rounded" />
+                  <div className="h-4 w-36 bg-[#e8eef7] rounded" />
+                  <div className="h-4 w-10 bg-[#e8eef7] rounded" />
                 </div>
-                <div className="h-6 w-20 bg-[#f0f0f0] rounded-[6px]" />
+                <div className="h-6 w-20 bg-[#e8eef7] rounded-[6px]" />
               </div>
             ))}
           </div>
@@ -178,7 +178,7 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
       {/* Error state */}
       {error && !loading && (
         <div className="p-6 bg-[#feecee] border border-[#fcccd1] rounded-[16px] text-[#e5484d] flex items-center gap-3">
-          <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+          <AlertTriangle className="h-5 w-5 shrink-0" />
           <div>
             <p className="font-semibold text-[14px]">Unable to load dependency graph</p>
             <p className="text-[12px] opacity-90">{error}</p>
@@ -188,38 +188,38 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
 
       {/* Zero Dependencies Banner */}
       {data && data.requirements.length === 0 && !loading && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[20px] p-8 text-center flex flex-col items-center justify-center">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-8 text-center flex flex-col items-center justify-center">
           <div className="w-14 h-14 rounded-full bg-[#eefcf3] text-[#17a45c] flex items-center justify-center mb-3">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h4 className="font-sans font-bold text-[18px] text-[#1a1a1a]">Zero Runtime Dependencies</h4>
-          <p className="text-[13px] text-[#6e6e6e] max-w-[440px] mt-2">
-            <span className="font-mono font-medium text-[#1a1a1a]">{packageName}@{version}</span> does not declare any external production dependencies. It has no upstream supply chain exposure!
+          <h4 className="font-sans font-bold text-[18px] text-[#0f172a]">Zero Runtime Dependencies</h4>
+          <p className="text-[13px] text-[#475569] max-w-[440px] mt-2">
+            <span className="font-mono font-medium text-[#0f172a]">{packageName}@{version}</span> does not declare any external production dependencies. It has no upstream supply chain exposure!
           </p>
         </div>
       )}
 
       {/* Requirements View */}
       {viewMode === 'requirements' && data && data.requirements.length > 0 && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[16px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="px-5 py-3.5 border-b border-[#f0f0f0] bg-[#fafafa] flex items-center justify-between text-[12px] font-semibold text-[#6e6e6e]">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] overflow-hidden shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="px-5 py-3.5 border-b border-[#e8eef7] bg-[#f8fbff] flex items-center justify-between text-[12px] font-semibold text-[#475569]">
             <span>Package Name</span>
             <span>Version Constraint</span>
           </div>
 
-          <div className="divide-y divide-[#f0f0f0]">
+          <div className="divide-y divide-[#e8eef7]">
             {filteredRequirements.map((req) => (
               <div
                 key={req.name}
-                className="px-5 py-3 flex items-center justify-between hover:bg-[#fbfbfb] transition-colors group"
+                className="px-5 py-3 flex items-center justify-between hover:bg-[#f8fbff] transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
                   <Link
                     href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(req.name)}&type=overview`}
-                    className="font-mono text-[14px] font-semibold text-[#1a1a1a] group-hover:text-[#1d53c6] hover:underline flex items-center gap-1.5"
+                    className="font-mono text-[14px] font-semibold text-[#0f172a] group-hover:text-[#0558d6] hover:underline flex items-center gap-1.5"
                   >
                     {req.name}
-                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-[#1d53c6]" />
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-[#0558d6]" />
                   </Link>
                   {req.isDev && (
                     <Badge variant="default" size="sm">
@@ -228,7 +228,7 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[12px] bg-[#f4f4f4] border border-[#e8e8e8] px-2.5 py-1 rounded-[6px] text-[#4a4a4a]">
+                  <span className="font-mono text-[12px] bg-[#f1f6fd] border border-[#dce7f5] px-2.5 py-1 rounded-[6px] text-[#4a4a4a]">
                     {req.constraint || '*'}
                   </span>
                 </div>
@@ -240,36 +240,36 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
 
       {/* Resolved Graph View */}
       {viewMode === 'graph' && data && (
-        <div className="bg-white border border-[#e8e8e8] rounded-[16px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="px-5 py-3.5 border-b border-[#f0f0f0] bg-[#fafafa] flex items-center justify-between text-[12px] font-semibold text-[#6e6e6e]">
+        <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] overflow-hidden shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="px-5 py-3.5 border-b border-[#e8eef7] bg-[#f8fbff] flex items-center justify-between text-[12px] font-semibold text-[#475569]">
             <span>Resolved Package</span>
             <span>Relation</span>
           </div>
 
           {filteredGraph.length === 0 ? (
-            <div className="p-8 text-center text-[13px] text-[#555a64]">
+            <div className="p-8 text-center text-[13px] text-[#475569]">
               No resolved graph nodes match your query.
             </div>
           ) : (
-            <div className="divide-y divide-[#f0f0f0]">
+            <div className="divide-y divide-[#e8eef7]">
               {filteredGraph.map((node, idx) => (
                 <div
                   key={`${node.name}-${node.version}-${idx}`}
-                  className="px-5 py-3 flex items-center justify-between hover:bg-[#fbfbfb] transition-colors group"
+                  className="px-5 py-3 flex items-center justify-between hover:bg-[#f8fbff] transition-colors group"
                 >
                   <div className="flex items-center gap-2">
                     <span
                       className={`w-2 h-2 rounded-full ${
-                        node.relation === 'DIRECT' ? 'bg-[#1d53c6]' : 'bg-[#a6a6a6]'
+                        node.relation === 'DIRECT' ? 'bg-[#0558d6]' : 'bg-[#64748b]'
                       }`}
                     />
                     <Link
                       href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(node.name)}&type=overview`}
-                      className="font-mono text-[13px] font-semibold text-[#1a1a1a] group-hover:text-[#1d53c6] hover:underline"
+                      className="font-mono text-[13px] font-semibold text-[#0f172a] group-hover:text-[#0558d6] hover:underline"
                     >
                       {node.name}
                     </Link>
-                    <span className="font-mono text-[12px] text-[#6e6e6e]">@{node.version}</span>
+                    <span className="font-mono text-[12px] text-[#475569]">@{node.version}</span>
                   </div>
 
                   <div>
@@ -286,7 +286,7 @@ export function DependenciesTab({ ecosystem, packageName, version }: Dependencie
 
       {/* Footnote */}
       {data && (
-        <div className="text-[11px] text-[#555a64] flex items-center justify-between">
+        <div className="text-[11px] text-[#475569] flex items-center justify-between">
           <span>Source: {data.source}</span>
           <span>{data.note}</span>
         </div>

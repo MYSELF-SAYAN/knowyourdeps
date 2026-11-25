@@ -13,15 +13,15 @@ import {
   MessageSquare,
   FileText,
   Table as TableIcon,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 
 function DocsContent() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [isManualOpen, setIsManualOpen] = useState<boolean>(true);
-
-  // Compare modal state for global parity with landing page
+  const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-  const [compareTargets, setCompareTargets] = useState<ComparisonTarget[]>([
+  const [compareTargets] = useState<ComparisonTarget[]>([
     { ecosystem: 'npm', name: 'axios' },
     { ecosystem: 'npm', name: 'got' },
   ]);
@@ -65,21 +65,22 @@ function DocsContent() {
     }
   };
 
-  const MCP_ENDPOINT = 'https://knowyourdeps-mcp.onrender.com/sse';
+  const MCP_HTTP_ENDPOINT = 'https://knowyourdeps-mcp.onrender.com/mcp';
+  const MCP_SSE_ENDPOINT = 'https://knowyourdeps-mcp.onrender.com/sse';
   const SKILL_CMD = 'npx skills add MYSELF-SAYAN/knowyourdeps';
-  const AGENT_PROMPT = `Install KnowYourDeps and connect it to this coding agent using ${SKILL_CMD} and configure the MCP server at ${MCP_ENDPOINT}. Show me the setup plan for approval, then verify the installation.`;
+  const AGENT_PROMPT = `Install KnowYourDeps and connect it to this coding agent using ${SKILL_CMD} and configure the MCP server at ${MCP_HTTP_ENDPOINT} (fallback SSE: ${MCP_SSE_ENDPOINT}). Show me the setup plan for approval, then verify the installation.`;
 
   const AGENTS = [
     {
       id: 'cursor',
       name: 'Cursor IDE',
       file: '.cursor/mcp.json',
-      desc: 'Save in project root or add in Cursor Settings > Features > MCP.',
+      desc: 'Place in project root or configure under Cursor Settings > Tools & MCP (Streamable HTTP).',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              url: MCP_ENDPOINT,
+              url: MCP_HTTP_ENDPOINT,
             },
           },
         },
@@ -89,14 +90,15 @@ function DocsContent() {
     },
     {
       id: 'claude',
-      name: 'Claude Desktop',
+      name: 'Claude Desktop & Claude Code',
       file: 'claude_desktop_config.json',
-      desc: '%APPDATA%\\Claude (Win) or ~/Library/Application Support/Claude (Mac).',
+      desc: '%APPDATA%\\Claude (Windows) or ~/Library/Application Support/Claude (macOS).',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              url: MCP_ENDPOINT,
+              command: 'npx',
+              args: ['-y', 'mcp-remote', MCP_SSE_ENDPOINT],
             },
           },
         },
@@ -108,13 +110,12 @@ function DocsContent() {
       id: 'antigravity',
       name: 'Google Antigravity & Gemini CLI',
       file: '~/.gemini/config/mcp_config.json',
-      desc: 'Connects via mcp-remote bridge for Antigravity stdio transport.',
+      desc: 'Connects via Streamable HTTP endpoint or mcp-remote stdio bridge.',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              command: 'npx',
-              args: ['-y', 'mcp-remote', MCP_ENDPOINT],
+              url: MCP_HTTP_ENDPOINT,
             },
           },
         },
@@ -124,14 +125,14 @@ function DocsContent() {
     },
     {
       id: 'vscode',
-      name: 'VS Code (Roo Code / Cline)',
+      name: 'VS Code (Cline / Roo Code)',
       file: 'cline_mcp_settings.json',
-      desc: 'Add to Cline or Roo Code extension settings in VS Code.',
+      desc: 'Add to your VS Code MCP extension settings using SSE or Streamable HTTP.',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              url: MCP_ENDPOINT,
+              url: MCP_SSE_ENDPOINT,
             },
           },
         },
@@ -143,231 +144,197 @@ function DocsContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-[#0f172a] relative">
-      {/* Smokey Sky Atmosphere Aura Spanning Whole Page (tasteskill.dev design system) */}
-      <div className="sky-full-page-bg">
+      {/* Atmospheric Blue Sky Gradient Spanning Whole Page */}
+      <div className="sky-full-page-bg" aria-hidden="true">
         <div className="sky-clouds-overlay" />
       </div>
 
-      {/* Centered Floating Animated Navbar */}
-      <header className="sticky top-3.5 z-40 w-full flex justify-center px-4 pointer-events-none">
+      {/* Centered Flush Apple Notch Header */}
+      <header className="sticky top-0 z-40 w-full flex justify-center px-3 sm:px-6 pointer-events-none">
         <Navbar onOpenCompare={openCompareModal} />
       </header>
 
-      {/* Main Single-Column Document Container with Frosted Glass Surface */}
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-16 mt-4 relative z-10">
-        <div className="bg-white/85 backdrop-blur-2xl rounded-[28px] border border-white/90 shadow-[0_12px_48px_rgba(14,165,233,0.12),0_1px_3px_rgba(0,0,0,0.04)] p-6 sm:p-10 space-y-12">
-          
-          {/* Header */}
-          <div className="border-b border-[#e2e8f0]/80 pb-6">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#1d53c6] hover:text-[#19409b] transition-colors mb-4 group"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              <span>Back to Search</span>
-            </Link>
+      <main id="main-content" className="w-full max-w-[920px] mx-auto px-5 sm:px-8 pt-10 sm:pt-14 pb-20 relative z-10">
+        {/* Hero Header over Zenith Cobalt Sky */}
+        <div className="text-center max-w-2xl mx-auto mb-9 sm:mb-11">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-[#e0f2fe] hover:text-white transition-colors duration-150 mb-5 rounded-full px-3 py-1 bg-white/12 border border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Back to Search</span>
+          </Link>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="font-display text-[28px] sm:text-[36px] font-bold tracking-tight text-[#0f172a]">
-                  AI Agent &amp; MCP Setup
-                </h1>
-                <p className="mt-1.5 text-[14px] text-[#475569] leading-relaxed">
-                  Install the security audit skill and connect your coding agent to the live cloud scanner.
-                </p>
-              </div>
+          <h1 className="font-display font-semibold text-[34px] sm:text-[48px] leading-[1.06] tracking-[-0.03em] text-white [text-shadow:0_2px_20px_rgba(3,28,77,0.28)]">
+            AI Agent &amp;{' '}
+            <span className="font-serif-accent italic font-normal text-[#dff3ff]">
+              MCP Setup.
+            </span>
+          </h1>
+          <p className="mt-3 text-[15px] sm:text-[16px] text-[#eaf4ff] leading-relaxed">
+            Install the security audit skill and connect your editor to the cloud scanner over Streamable HTTP or SSE.
+          </p>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#e2e8f0] text-[11px] font-semibold text-emerald-800 shadow-xs">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse" />
-                <span>MCP Cloud: Online</span>
-              </div>
-            </div>
+          <div className="mt-5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#070b14]/85 border border-white/15 text-[11.5px] font-mono text-emerald-300">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+            <span>MCP Cloud Online · Streamable HTTP &amp; SSE</span>
           </div>
+        </div>
 
-          {/* Section 1: Install the Skill (Prominently on top as requested) */}
+        {/* Crisp High-Contrast Documentation Card on Sky Wash */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-[#cde3fa] shadow-[0_24px_64px_-16px_rgba(3,28,77,0.2)] p-6 sm:p-10 space-y-10">
+          {/* Section 1: Skill Install */}
           <section className="space-y-3.5">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1d53c6] text-white font-semibold text-[12px] shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0558d6] text-white font-mono font-semibold text-[12px] shrink-0">
                 1
               </span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#0f172a] tracking-tight">
+              <h2 className="font-display text-[20px] sm:text-[22px] font-semibold text-[#0f172a] tracking-tight">
                 Install the Audit Skill (skills.sh)
               </h2>
             </div>
-            <p className="text-[13.5px] text-[#475569]">
-              Run this in your project terminal. It auto-detects Cursor, Claude Code, Antigravity, or VS Code and sets up the skill instructions:
+            <p className="text-[14px] text-[#475569] leading-relaxed">
+              Run in your workspace root. It detects Cursor, Claude Code, Antigravity, or VS Code and installs the audit workflow and report script.
             </p>
 
-            <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-lg text-[#f8fafc]">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
-                <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
-                  Terminal
-                </span>
+            <div className="bg-[#070b14] border border-white/10 rounded-2xl overflow-hidden text-[#f8fafc]">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0b1120] border-b border-white/10">
+                <span className="text-[12px] font-mono text-[#94a3b8]">Terminal</span>
                 <button
                   type="button"
                   onClick={() => copyCode('skill-cmd', SKILL_CMD)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
+                  aria-label="Copy skill install command"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium text-[#cbd5e1] hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
                 >
                   {copiedId === 'skill-cmd' ? (
                     <>
-                      <Check className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-emerald-400 font-semibold">Copied</span>
+                      <Check className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                      <span className="text-emerald-300 font-semibold">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>Copy</span>
                     </>
                   )}
                 </button>
               </div>
-              <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] select-all">
-                <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
-                {SKILL_CMD}
+              <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] overflow-x-auto">
+                <code translate="no">
+                  <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
+                  {SKILL_CMD}
+                </code>
               </div>
             </div>
           </section>
 
-          {/* Section 2: Connect KnowYourDeps */}
+          {/* Section 2: Connect KnowYourDeps MCP */}
           <section className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1d53c6] text-white font-semibold text-[12px] shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0558d6] text-white font-mono font-semibold text-[12px] shrink-0">
                 2
               </span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#0f172a] tracking-tight">
-                Connect KnowYourDeps
+              <h2 className="font-display text-[20px] sm:text-[22px] font-semibold text-[#0f172a] tracking-tight">
+                Connect Your Coding Agent
               </h2>
             </div>
-            <p className="text-[13.5px] text-[#475569]">
-              Copy this into your coding agent:
+            <p className="text-[14px] text-[#475569]">
+              Paste this onboarding prompt into your coding agent, or expand client configs below.
             </p>
 
             {/* Primary Prompt Card */}
-            <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-xl text-white">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
-                <div className="flex items-center gap-2 select-none">
-                  <span className="text-[#64748b] text-[12px] tracking-[3px] select-none">
-                    •••
-                  </span>
-                  <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
-                    Your coding agent
-                  </span>
-                </div>
-
+            <div className="bg-[#070b14] border border-white/10 rounded-2xl overflow-hidden text-white">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0b1120] border-b border-white/10">
+                <span className="text-[12px] font-mono text-[#94a3b8]">Agent onboarding prompt</span>
                 <button
                   type="button"
                   onClick={() => copyCode('agent-prompt', AGENT_PROMPT)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
+                  aria-label="Copy onboarding prompt"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium text-[#cbd5e1] hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
                 >
                   {copiedId === 'agent-prompt' ? (
                     <>
-                      <Check className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-emerald-400 font-semibold">Copied</span>
+                      <Check className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                      <span className="text-emerald-300 font-semibold">Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-3.5 w-3.5" aria-hidden="true" />
                       <span>Copy</span>
                     </>
                   )}
                 </button>
               </div>
-
-              <div className="p-4 sm:p-5 font-mono text-[13px] sm:text-[13.5px] leading-relaxed text-[#f1f5f9] select-all">
+              <div className="p-4 sm:p-5 font-mono text-[13px] leading-relaxed text-[#f1f5f9]">
                 <span className="text-[#64748b] select-none font-bold mr-2">&gt;</span>
                 <span>{AGENT_PROMPT}</span>
-                <span className="inline-block w-2.5 h-4.5 bg-[#38bdf8] ml-1.5 align-middle animate-pulse" />
               </div>
             </div>
 
-            {/* Collapsible Drawer */}
+            {/* Collapsible Manual Setup */}
             <div className="pt-1">
               <button
                 type="button"
+                aria-expanded={isManualOpen}
                 onClick={() => setIsManualOpen(!isManualOpen)}
-                className="flex items-center gap-2 text-[13.5px] font-medium text-[#64748b] hover:text-[#0f172a] transition-colors cursor-pointer select-none py-1 group"
+                className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[#475569] hover:text-[#0f172a] transition-colors duration-150 cursor-pointer select-none py-1 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
               >
-                <span className="text-[10px] text-[#64748b] group-hover:text-[#0f172a] transition-transform duration-150">
-                  {isManualOpen ? '▼' : '▶'}
-                </span>
-                <span>Or run setup yourself</span>
+                {isManualOpen ? (
+                  <ChevronDown className="w-4 h-4 text-[#0558d6]" aria-hidden="true" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-[#64748b]" aria-hidden="true" />
+                )}
+                <span>Manual MCP JSON configurations</span>
               </button>
 
               {isManualOpen && (
-                <div className="mt-3.5 space-y-5 pl-1 sm:pl-3 border-l-2 border-[#bfdbfe]/60 transition-all">
-                  <div className="bg-[#0b0f19] border border-[#1e293b]/70 rounded-[14px] overflow-hidden shadow-md">
-                    <div className="flex items-center justify-between px-4 py-2.5 bg-[#13192b] border-b border-[#1e293b]/70">
-                      <span className="text-[12.5px] font-sans font-medium text-[#94a3b8]">
-                        Terminal
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => copyCode('terminal-cmd', SKILL_CMD)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-sans font-medium text-[#94a3b8] hover:text-white hover:bg-white/10 transition-colors cursor-pointer select-none"
-                      >
-                        {copiedId === 'terminal-cmd' ? (
-                          <>
-                            <Check className="h-3.5 w-3.5 text-emerald-400" />
-                            <span className="text-emerald-400 font-semibold">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] select-all">
-                      {SKILL_CMD}
-                    </div>
-                  </div>
-
-                  <div className="text-[13px] text-[#475569] font-medium pt-1">
-                    For one specific client, add its configuration:
-                  </div>
-
+                <div className="mt-4 space-y-4 pl-2 sm:pl-4 border-l-2 border-[#bfdbfe]">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {AGENTS.map((agent) => (
                       <div
                         key={agent.id}
-                        className="bg-white/95 rounded-[16px] border border-[#e2e8f0] p-4 shadow-xs space-y-2.5 flex flex-col justify-between"
+                        className="bg-[#f8fbff] rounded-2xl border border-[#dce7f5] p-4 flex flex-col gap-3"
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold text-[13.5px] text-[#0f172a]">
+                          <div className="flex items-center justify-between gap-2 min-w-0">
+                            <span className="font-semibold text-[13.5px] text-[#0f172a] truncate">
                               {agent.name}
                             </span>
-                            <span className="font-mono text-[10.5px] text-[#1d53c6] bg-[#eff6ff] px-2 py-0.5 rounded-md border border-[#bfdbfe]/60 font-semibold truncate max-w-[170px]" title={agent.file}>
+                            <span
+                              className="font-mono text-[10.5px] text-[#0558d6] bg-[#eff6ff] px-2 py-0.5 rounded-md border border-[#bfdbfe] font-semibold truncate max-w-[165px] shrink-0"
+                              title={agent.file}
+                              translate="no"
+                            >
                               {agent.file}
                             </span>
                           </div>
-                          <div className="text-[11.5px] text-[#64748b] mt-1 leading-snug">{agent.desc}</div>
+                          <p className="text-[12px] text-[#475569] mt-1 leading-snug">{agent.desc}</p>
                         </div>
 
-                        <div className="bg-[#0b0f19] rounded-[10px] p-2.5 border border-[#1e293b]/70 text-[#f8fafc]">
-                          <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#1e293b] text-[11px] text-[#94a3b8]">
+                        <div className="bg-[#070b14] rounded-xl p-3 border border-white/10 text-[#f8fafc]">
+                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[11px] text-[#94a3b8]">
                             <span className="font-mono text-[10.5px]">JSON Config</span>
                             <button
                               type="button"
                               onClick={() => copyCode(agent.id, agent.config)}
-                              className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-white text-[10.5px] font-sans transition-colors cursor-pointer select-none"
+                              aria-label={`Copy ${agent.name} JSON configuration`}
+                              className="flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 hover:bg-white/15 text-white text-[10.5px] transition-colors duration-150 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
                             >
                               {copiedId === agent.id ? (
                                 <>
-                                  <Check className="h-3 w-3 text-emerald-400" />
-                                  <span className="text-emerald-400 font-semibold">Copied</span>
+                                  <Check className="h-3 w-3 text-emerald-400" aria-hidden="true" />
+                                  <span className="text-emerald-300 font-semibold">Copied</span>
                                 </>
                               ) : (
                                 <>
-                                  <Copy className="h-3 w-3" />
+                                  <Copy className="h-3 w-3" aria-hidden="true" />
                                   <span>Copy</span>
                                 </>
                               )}
                             </button>
                           </div>
-                          <pre className="font-mono text-[11px] text-[#93c5fd] overflow-x-auto leading-relaxed select-all">
-                            <code>{agent.config}</code>
+                          <pre className="font-mono text-[11px] text-[#93c5fd] whitespace-pre-wrap break-all leading-relaxed">
+                            <code translate="no">{agent.config}</code>
                           </pre>
                         </div>
                       </div>
@@ -378,48 +345,45 @@ function DocsContent() {
             </div>
           </section>
 
-          {/* Section 3: How to Use in Agent Chat */}
+          {/* Section 3: Prompts in Chat */}
           <section className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1d53c6] text-white font-semibold text-[12px] shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0558d6] text-white font-mono font-semibold text-[12px] shrink-0">
                 3
               </span>
-              <h2 className="text-[19px] sm:text-[21px] font-bold text-[#0f172a] tracking-tight">
-                How to Use in Agent Chat
+              <h2 className="font-display text-[20px] sm:text-[22px] font-semibold text-[#0f172a] tracking-tight">
+                Example Agent Prompts
               </h2>
             </div>
-            <p className="text-[13.5px] text-[#475569]">
-              Ask your agent in plain English. The skill will automatically guide the workflow and resolve exact semver bounds:
-            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-[12.5px]">
-              <div className="p-4 rounded-[16px] bg-white/95 border border-[#e2e8f0] shadow-xs space-y-2">
+              <div className="p-4 rounded-2xl bg-[#f8fbff] border border-[#dce7f5] space-y-2">
                 <div className="font-semibold text-[#0f172a] flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-[#1d53c6]" />
+                  <MessageSquare className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
                   <span>Full Project Audit</span>
                 </div>
-                <p className="font-mono text-[11.5px] text-[#334155] bg-[#f8fafc] p-2.5 rounded-lg border border-[#e2e8f0]">
-                  &quot;Audit all dependencies in this workspace for security vulnerabilities.&quot;
+                <p className="font-mono text-[11.5px] text-[#334155] bg-white p-2.5 rounded-xl border border-[#dce7f5]">
+                  &quot;Audit all dependencies in this workspace and save Markdown &amp; CSV reports.&quot;
                 </p>
               </div>
 
-              <div className="p-4 rounded-[16px] bg-white/95 border border-[#e2e8f0] shadow-xs space-y-2">
+              <div className="p-4 rounded-2xl bg-[#f8fbff] border border-[#dce7f5] space-y-2">
                 <div className="font-semibold text-[#0f172a] flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-[#1d53c6]" />
-                  <span>Single Package Check</span>
+                  <MessageSquare className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
+                  <span>Non-Breaking Upgrade</span>
                 </div>
-                <p className="font-mono text-[11.5px] text-[#334155] bg-[#f8fafc] p-2.5 rounded-lg border border-[#e2e8f0]">
-                  &quot;Is marked@18.2.1 affected by any active CVEs? If so, how to fix it?&quot;
+                <p className="font-mono text-[11.5px] text-[#334155] bg-white p-2.5 rounded-xl border border-[#dce7f5]">
+                  &quot;Build a safe upgrade plan for express without breaking peer packages.&quot;
                 </p>
               </div>
 
-              <div className="p-4 rounded-[16px] bg-white/95 border border-[#e2e8f0] shadow-xs space-y-2">
+              <div className="p-4 rounded-2xl bg-[#f8fbff] border border-[#dce7f5] space-y-2">
                 <div className="font-semibold text-[#0f172a] flex items-center gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-[#1d53c6]" />
-                  <span>Targeted File &amp; CSV</span>
+                  <MessageSquare className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
+                  <span>Targeted Check</span>
                 </div>
-                <p className="font-mono text-[11.5px] text-[#334155] bg-[#f8fafc] p-2.5 rounded-lg border border-[#e2e8f0]">
-                  &quot;Scan requirements.txt and save a CSV report of vulnerable packages to output/&quot;
+                <p className="font-mono text-[11.5px] text-[#334155] bg-white p-2.5 rounded-xl border border-[#dce7f5]">
+                  &quot;Check requirements.txt for CVEs and verify upgrade impact before updating.&quot;
                 </p>
               </div>
             </div>
@@ -427,51 +391,53 @@ function DocsContent() {
 
           {/* Section 4: Saved Deliverables */}
           <section className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1d53c6] text-white font-semibold text-[12px] shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0558d6] text-white font-mono font-semibold text-[12px] shrink-0">
                 4
               </span>
-              <h2 className="text-[18px] sm:text-[20px] font-bold text-[#0f172a] tracking-tight">
+              <h2 className="font-display text-[20px] sm:text-[22px] font-semibold text-[#0f172a] tracking-tight">
                 Saved Deliverables
               </h2>
             </div>
-            <p className="text-[13.5px] text-[#475569]">
-              Reports are created inside your project&apos;s <code className="font-mono text-[#1d53c6] font-semibold bg-[#eff6ff] px-1.5 py-0.5 rounded border border-[#bfdbfe]/60">output/</code> directory:
+            <p className="text-[14px] text-[#475569]">
+              Generated reports overwrite stale snapshots cleanly inside your workspace{' '}
+              <code className="font-mono text-[#0558d6] font-semibold bg-[#eff6ff] px-1.5 py-0.5 rounded border border-[#bfdbfe]">
+                output/
+              </code>{' '}
+              directory:
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-[12.5px]">
-              <div className="p-4 rounded-[16px] bg-white/95 border border-[#e2e8f0] flex items-start gap-3 shadow-xs">
-                <FileText className="h-4 w-4 text-[#1d53c6] shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-[#f8fbff] border border-[#dce7f5] flex items-start gap-3">
+                <FileText className="h-4 w-4 text-[#0558d6] shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
-                  <div className="font-mono text-[12.5px] font-bold text-[#0f172a]">
+                  <div className="font-mono text-[12.5px] font-semibold text-[#0f172a]" translate="no">
                     output/vulnerability-report.md
                   </div>
-                  <div className="text-[#64748b] text-[12px] mt-1 leading-relaxed">
-                    Executive summary table, active CVEs with CVSS scores, remediation commands, and safer alternatives.
+                  <div className="text-[#475569] text-[12px] mt-1 leading-relaxed">
+                    Executive summary, active CVSS advisories, co-upgrade steps, and verified alternatives.
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-[16px] bg-white/95 border border-[#e2e8f0] flex items-start gap-3 shadow-xs">
-                <TableIcon className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-[#f8fbff] border border-[#dce7f5] flex items-start gap-3">
+                <TableIcon className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
-                  <div className="font-mono text-[12.5px] font-bold text-[#0f172a]">
+                  <div className="font-mono text-[12.5px] font-semibold text-[#0f172a]" translate="no">
                     output/vulnerability-report.csv
                   </div>
-                  <div className="text-[#64748b] text-[12px] mt-1 leading-relaxed">
-                    21-column Excel-compatible dataset with UTF-8 BOM encoding for compliance archiving and security reviews.
+                  <div className="text-[#475569] text-[12px] mt-1 leading-relaxed">
+                    21-column UTF-8 BOM CSV spreadsheet for compliance tracking and audit reviews.
                   </div>
                 </div>
               </div>
             </div>
           </section>
         </div>
-      </div>
+      </main>
 
-      {/* Global Unified Footer */}
       <Footer onOpenCompare={openCompareModal} />
 
-      {/* Comparison Drawer / Modal */}
       <ComparisonModal
         isOpen={isCompareOpen}
         onClose={() => setIsCompareOpen(false)}
@@ -485,8 +451,8 @@ export default function DocsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-          <div className="w-8 h-8 border-2 border-[#1d53c6] border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-[#eef7ff]">
+          <div className="w-8 h-8 border-2 border-[#0558d6] border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

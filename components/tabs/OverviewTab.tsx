@@ -148,88 +148,90 @@ export function OverviewTab({
   return (
     <div className="flex flex-col gap-5 animate-tab-in">
       {/* 4 Quick Stat Action Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Weekly Downloads */}
-        <div
+        <button
+          type="button"
           onClick={() => onSelectTab('history')}
-          className="flex flex-col justify-between p-4 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#bfdbfe] hover:shadow-[0_4px_16px_rgba(0,51,255,0.06)] transition-all cursor-pointer group"
+          className="min-w-0 flex flex-col justify-between p-4 text-left bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] hover:border-[#93c5fd] hover:shadow-[0_4px_16px_rgba(8,124,248,0.08)] transition-[border-color,box-shadow] duration-150 cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
         >
-          <div className="flex items-center justify-between text-[#555a64]">
+          <div className="flex items-center justify-between w-full text-[#475569]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Weekly Downloads</span>
-            <Download className="h-4 w-4 text-[#a6a6a6] group-hover:text-[#1d53c6] transition-colors" />
+            <Download className="h-4 w-4 text-[#64748b] group-hover:text-[#0558d6] transition-colors shrink-0" aria-hidden="true" />
           </div>
-          <div className="mt-2 font-display text-[26px] font-bold text-[#1a1a1a] tabular-nums">
+          <div className="mt-2 font-display text-[22px] xl:text-[24px] font-bold text-[#0f172a] tracking-tight tabular-nums truncate w-full">
             {pkg.totalDownloadsWeekly ? pkg.totalDownloadsWeekly.toLocaleString() : 'N/A'}
           </div>
-          <span className="mt-1 text-[11px] text-[#1d53c6] font-medium group-hover:underline">
-            View stats & metrics →
+          <span className="mt-1 text-[11px] text-[#0558d6] font-medium group-hover:underline">
+            View stats &amp; metrics →
           </span>
-        </div>
+        </button>
 
         {/* Security Status */}
-        <div
+        <button
+          type="button"
           onClick={() => onSelectTab('security')}
-          className="flex flex-col justify-between p-4 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#bfdbfe] hover:shadow-[0_4px_16px_rgba(0,51,255,0.06)] transition-all cursor-pointer group"
+          className="min-w-0 flex flex-col justify-between p-4 text-left bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] hover:border-[#93c5fd] hover:shadow-[0_4px_16px_rgba(8,124,248,0.08)] transition-[border-color,box-shadow] duration-150 cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
         >
-          <div className="flex items-center justify-between text-[#555a64]">
+          <div className="flex items-center justify-between w-full text-[#475569]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Security Status</span>
             {pkg.securityStatus === 'safe' ? (
-              <ShieldCheck className="h-4 w-4 text-[#17a45c]" />
+              <ShieldCheck className="h-4 w-4 text-[#17a45c] shrink-0" aria-hidden="true" />
             ) : (
-              <ShieldAlert className="h-4 w-4 text-[#e5484d]" />
+              <ShieldAlert className="h-4 w-4 text-[#e5484d] shrink-0" aria-hidden="true" />
             )}
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-display text-[26px] font-bold text-[#1a1a1a] tabular-nums">
+          <div className="mt-2 flex items-baseline gap-2 min-w-0">
+            <span className="font-display text-[22px] xl:text-[24px] font-bold text-[#0f172a] tabular-nums">
               {pkg.vulnerabilitiesCount}
             </span>
-            <span className="text-[12px] text-[#6e6e6e]">known advisories</span>
+            <span className="text-[12px] text-[#475569] truncate">known advisories</span>
           </div>
-          <span className="mt-1 text-[11px] text-[#1d53c6] font-medium group-hover:underline">
+          <span className="mt-1 text-[11px] text-[#0558d6] font-medium group-hover:underline">
             Multi-engine CVE scanner →
           </span>
-        </div>
+        </button>
 
         {/* License */}
-        <div className="flex flex-col justify-between p-4 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#555a64]">
+        <div className="min-w-0 flex flex-col justify-between p-4 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">License</span>
-            <Scale className="h-4 w-4 text-[#a6a6a6]" />
+            <Scale className="h-4 w-4 text-[#64748b] shrink-0" aria-hidden="true" />
           </div>
-          <div className="mt-2 font-display text-[22px] font-bold text-[#1a1a1a] truncate" title={pkg.license}>
+          <div className="mt-2 font-display text-[20px] xl:text-[22px] font-bold text-[#0f172a] truncate" title={pkg.license}>
             {pkg.license}
           </div>
-          <span className="mt-1 text-[11px] text-[#6e6e6e]">Standard open-source license</span>
+          <span className="mt-1 text-[11px] text-[#475569]">Standard open-source license</span>
         </div>
 
         {/* Latest Release */}
-        <div className="flex flex-col justify-between p-4 bg-white border border-[#e8e8e8] rounded-[18px] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="flex items-center justify-between text-[#555a64]">
+        <div className="min-w-0 flex flex-col justify-between p-4 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+          <div className="flex items-center justify-between text-[#475569]">
             <span className="text-[11.5px] font-semibold uppercase tracking-wider">Latest Release</span>
-            <Layers className="h-4 w-4 text-[#a6a6a6]" />
+            <Layers className="h-4 w-4 text-[#64748b] shrink-0" aria-hidden="true" />
           </div>
-          <div className="mt-2 font-display text-[26px] font-bold text-[#1a1a1a] truncate">
+          <div className="mt-2 font-display text-[22px] xl:text-[24px] font-bold text-[#0f172a] tabular-nums truncate">
             v{pkg.latestVersion}
           </div>
-          <span className="mt-1 text-[11px] text-[#6e6e6e]">
+          <span className="mt-1 text-[11px] text-[#475569]">
             {pkg.totalReleases ? `${pkg.totalReleases} lifetime releases` : 'Current registry production tag'}
           </span>
         </div>
       </div>
 
       {/* Version-Wise README.md Container */}
-      <div className="bg-white border border-[#e8e8e8] rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+      <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)] overflow-hidden">
         {/* Top Control Bar: README Header + Version Switcher */}
-        <div className="px-6 py-3.5 border-b border-[#e8e8e8] bg-[#fafafa] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#1d53c6]" />
-            <span className="font-mono font-bold text-[13px] text-[#1a1a1a]">README.md</span>
-            <span className="text-[#a6a6a6]">•</span>
-            <span className="text-[12px] text-[#6e6e6e]">
-              Viewing documentation for <strong className="font-mono text-[#1a1a1a]">v{currentVersion}</strong>
+        <div className="px-5 sm:px-6 py-3.5 border-b border-[#dce7f5] bg-[#f8fbff] flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <BookOpen className="h-4 w-4 text-[#0558d6] shrink-0" aria-hidden="true" />
+            <span className="font-mono font-bold text-[13px] text-[#0f172a]">README.md</span>
+            <span className="text-[#64748b] hidden sm:inline">•</span>
+            <span className="text-[12px] text-[#475569]">
+              Viewing documentation for <strong className="font-mono text-[#0f172a]">v{currentVersion}</strong>
             </span>
             {readme?.source && (
-              <span className="text-[10.5px] text-[#555a64] bg-[#f0f0f0] px-2 py-0.5 rounded-full font-medium">
+              <span className="text-[10.5px] text-[#475569] bg-[#e8eef7] px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
                 {readme.source}
               </span>
             )}
@@ -239,35 +241,41 @@ export function OverviewTab({
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"
+              aria-expanded={isDropdownOpen}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f4f4f4] border border-[#e8e8e8] rounded-[10px] text-[12px] font-semibold text-[#1a1a1a] select-none transition-all cursor-pointer shadow-2xs active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f4f8ff] border border-[#dce7f5] rounded-[10px] text-[12px] font-semibold text-[#0f172a] select-none transition-[background-color,border-color,transform] duration-150 cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
             >
-              <span className="text-[#555a64] font-normal">Version:</span>
-              <span className="font-mono font-bold text-[#1d53c6]">v{currentVersion}</span>
+              <span className="text-[#475569] font-normal">Version:</span>
+              <span className="font-mono font-bold text-[#0558d6]">v{currentVersion}</span>
               <ChevronDown
-                className={`h-3.5 w-3.5 text-[#555a64] transition-transform duration-200 ${
+                aria-hidden="true"
+                className={`h-3.5 w-3.5 text-[#475569] transition-transform duration-200 ${
                   isDropdownOpen ? 'rotate-180' : ''
                 }`}
               />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#e8e8e8] rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 origin-top-right overscroll-contain">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#555a64]" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" aria-hidden="true" />
                   <input
                     type="text"
+                    name="readme-version-filter"
+                    aria-label="Filter release versions for README"
+                    autoComplete="off"
+                    spellCheck={false}
                     value={versionSearch}
                     onChange={(e) => setVersionSearch(e.target.value)}
-                    placeholder="Search version README..."
-                    className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8f8f8] border border-[#e8e8e8] rounded-[8px] focus:outline-none focus:border-[#1d53c6] focus:bg-white transition-colors"
+                    placeholder="Search version README…"
+                    className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-[#f8fbff] border border-[#dce7f5] rounded-[8px] focus:outline-none focus:border-[#087cf8] focus:ring-2 focus:ring-[#087cf8]/20 focus:bg-white transition-colors"
                     autoFocus
                   />
                 </div>
 
-                <div className="max-h-60 overflow-y-auto divide-y divide-[#f4f4f4] scrollbar-thin">
+                <div className="max-h-60 overflow-y-auto overscroll-contain divide-y divide-[#f1f5f9] scrollbar-thin">
                   {filteredVersions.length === 0 ? (
-                    <div className="p-4 text-center text-[12px] text-[#555a64]">
+                    <div className="p-4 text-center text-[12px] text-[#475569]">
                       No versions found.
                     </div>
                   ) : (
@@ -280,12 +288,12 @@ export function OverviewTab({
                           onClick={() => handleVersionChange(v.version)}
                           className={`w-full px-3 py-2 text-left flex items-center justify-between text-[12px] transition-colors rounded-[8px] cursor-pointer ${
                             isSelected
-                              ? 'bg-[#eff6ff] text-[#1d53c6] font-bold'
-                              : 'hover:bg-[#f8f8f8] text-[#1a1a1a]'
+                              ? 'bg-[#eff6ff] text-[#0558d6] font-bold'
+                              : 'hover:bg-[#f8fbff] text-[#0f172a]'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            {isSelected && <Check className="h-3.5 w-3.5 text-[#1d53c6]" />}
+                            {isSelected && <Check className="h-3.5 w-3.5 text-[#0558d6]" />}
                             <span className="font-mono">v{v.version}</span>
                             {v.isLatest && (
                               <Badge variant="accent" size="sm">
@@ -293,7 +301,7 @@ export function OverviewTab({
                               </Badge>
                             )}
                           </div>
-                          <span className="text-[10px] text-[#a6a6a6]">
+                          <span className="text-[11px] text-[#64748b] tabular-nums">
                             {v.publishedAt ? new Date(v.publishedAt).toLocaleDateString() : ''}
                           </span>
                         </button>
@@ -303,13 +311,13 @@ export function OverviewTab({
                 </div>
 
                 {latestVersionObj && currentVersion !== latestVersionObj.version && (
-                  <div className="pt-2 border-t border-[#f0f0f0]">
+                  <div className="pt-2 border-t border-[#e8eef7]">
                     <button
                       type="button"
                       onClick={() => handleVersionChange(latestVersionObj.version)}
-                      className="w-full text-center py-1.5 text-[11px] font-semibold text-[#1d53c6] hover:bg-[#eff6ff] rounded-[8px] transition-colors flex items-center justify-center gap-1"
+                      className="w-full text-center py-1.5 text-[11px] font-semibold text-[#0558d6] hover:bg-[#eff6ff] rounded-[8px] transition-colors flex items-center justify-center gap-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                     >
-                      <Sparkles className="h-3 w-3" />
+                      <Sparkles className="h-3 w-3" aria-hidden="true" />
                       Jump to latest release (v{latestVersionObj.version})
                     </button>
                   </div>
@@ -322,35 +330,35 @@ export function OverviewTab({
         {/* README Content Area with Rich Markdown Skeleton */}
         <div className="p-6 sm:p-8">
           {loadingReadme ? (
-            <div className="space-y-6 py-2 animate-in fade-in duration-150">
+            <div className="space-y-6 py-2">
               {/* Header loader indicator */}
-              <div className="flex items-center gap-2 text-[12px] text-[#1d53c6] font-medium mb-4">
-                <Loader2 className="h-4 w-4 animate-spin text-[#1d53c6]" />
-                <span>Loading documentation for v{currentVersion}...</span>
+              <div className="flex items-center gap-2 text-[12px] text-[#0558d6] font-medium mb-4">
+                <Loader2 className="h-4 w-4 animate-spin text-[#0558d6]" aria-hidden="true" />
+                <span>Loading documentation for v{currentVersion}…</span>
               </div>
               {/* Document title skeleton */}
-              <div className="h-8 w-64 bg-[#f0f0f0] rounded-[8px] animate-pulse" />
+              <div className="h-8 w-64 bg-[#e8eef7] rounded-[8px] animate-pulse" />
               {/* Badge row skeleton */}
               <div className="flex items-center gap-2">
-                <div className="h-5 w-16 bg-[#f0f0f0] rounded animate-pulse" />
-                <div className="h-5 w-20 bg-[#f0f0f0] rounded animate-pulse" />
-                <div className="h-5 w-24 bg-[#f0f0f0] rounded animate-pulse" />
+                <div className="h-5 w-16 bg-[#e8eef7] rounded animate-pulse" />
+                <div className="h-5 w-20 bg-[#e8eef7] rounded animate-pulse" />
+                <div className="h-5 w-24 bg-[#e8eef7] rounded animate-pulse" />
               </div>
               {/* Paragraph skeleton */}
               <div className="space-y-2.5">
-                <div className="h-3.5 w-full bg-[#f0f0f0] rounded animate-pulse" />
-                <div className="h-3.5 w-11/12 bg-[#f0f0f0] rounded animate-pulse" />
-                <div className="h-3.5 w-4/5 bg-[#f0f0f0] rounded animate-pulse" />
+                <div className="h-3.5 w-full bg-[#e8eef7] rounded animate-pulse" />
+                <div className="h-3.5 w-11/12 bg-[#e8eef7] rounded animate-pulse" />
+                <div className="h-3.5 w-4/5 bg-[#e8eef7] rounded animate-pulse" />
               </div>
               {/* Code block skeleton */}
-              <div className="h-28 bg-[#161b22]/5 border border-[#e8e8e8] rounded-[12px] p-4 flex flex-col justify-center space-y-2 animate-pulse">
+              <div className="h-28 bg-[#161b22]/5 border border-[#dce7f5] rounded-[12px] p-4 flex flex-col justify-center space-y-2 animate-pulse">
                 <div className="h-3.5 w-3/4 bg-[#e2e8f0] rounded" />
                 <div className="h-3.5 w-1/2 bg-[#e2e8f0] rounded" />
               </div>
               {/* Paragraph skeleton */}
               <div className="space-y-2.5">
-                <div className="h-3.5 w-full bg-[#f0f0f0] rounded animate-pulse" />
-                <div className="h-3.5 w-5/6 bg-[#f0f0f0] rounded animate-pulse" />
+                <div className="h-3.5 w-full bg-[#e8eef7] rounded animate-pulse" />
+                <div className="h-3.5 w-5/6 bg-[#e8eef7] rounded animate-pulse" />
               </div>
             </div>
           ) : readmeError ? (
@@ -362,16 +370,16 @@ export function OverviewTab({
               </div>
             </div>
           ) : !readme?.content || readme.content.trim().length === 0 ? (
-            <div className="py-16 text-center text-[#555a64] flex flex-col items-center">
+            <div className="py-16 text-center text-[#475569] flex flex-col items-center">
               <FileText className="h-10 w-10 text-[#d0d0d0] mb-2" />
-              <p className="text-[14px] font-medium text-[#1a1a1a]">No README provided</p>
-              <p className="text-[12px] text-[#6e6e6e] max-w-sm mt-1">
+              <p className="text-[14px] font-medium text-[#0f172a]">No README provided</p>
+              <p className="text-[12px] text-[#475569] max-w-sm mt-1">
                 The authors did not include a markdown documentation file for this release.
               </p>
             </div>
           ) : (
             <article
-              className="markdown-body text-[#1a1a1a] max-w-none"
+              className="markdown-body text-[#0f172a] max-w-none"
               dangerouslySetInnerHTML={{ __html: parsedHtml }}
             />
           )}

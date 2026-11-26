@@ -27,6 +27,13 @@ export function Footer({ onOpenCompare }: FooterProps) {
           <span className="text-[#475569] hidden md:inline">Server-proxied OSV, deps.dev &amp; registry telemetry</span>
           <span aria-hidden="true" className="hidden md:inline text-[#94a3b8]">·</span>
           <Link
+            href="/scan"
+            className="hover:text-[#0558d6] transition-colors duration-150 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
+          >
+            Scan
+          </Link>
+          <span aria-hidden="true" className="text-[#94a3b8]">·</span>
+          <Link
             href="/docs"
             className="hover:text-[#0558d6] transition-colors duration-150 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
           >

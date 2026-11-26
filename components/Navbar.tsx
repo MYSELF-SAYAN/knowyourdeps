@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Ecosystem } from '@/lib/types';
-import { BookOpen, Scale, Terminal } from 'lucide-react';
+import { BookOpen, FileSearch, Scale, Terminal } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCompare?: () => void;
@@ -17,6 +17,7 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
   const currentEcosystem = (searchParams.get('ecosystem') || 'npm').toLowerCase() as Ecosystem;
   const currentPackage = searchParams.get('package');
   const isDocsPage = pathname === '/docs';
+  const isScanPage = pathname === '/scan';
 
   const switchEcosystem = (eco: Ecosystem) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -24,6 +25,7 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
     if (currentPackage) {
       params.delete('package');
       params.delete('type');
+      params.delete('version');
     }
     router.push(`/?${params.toString()}`);
   };
@@ -102,6 +104,17 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
           </div>
 
           <Link
+            href="/scan"
+            aria-current={isScanPage ? 'page' : undefined}
+            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] sm:text-[13px] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8] ${
+              isScanPage ? 'text-white font-semibold' : 'text-[#a1a8b3] hover:text-white'
+            }`}
+          >
+            <FileSearch className="h-3.5 w-3.5 shrink-0 sm:hidden" aria-hidden="true" />
+            <span>Scan</span>
+          </Link>
+
+          <Link
             href="/docs"
             aria-current={isDocsPage ? 'page' : undefined}
             className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] sm:text-[13px] font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8] ${
@@ -110,16 +123,6 @@ export function Navbar({ onOpenCompare }: NavbarProps) {
           >
             <BookOpen className="h-3.5 w-3.5 shrink-0 sm:hidden" aria-hidden="true" />
             <span>Docs</span>
-          </Link>
-
-          <Link
-            href="https://docs.deps.dev/api/v3/"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[13px] font-medium text-[#a1a8b3] hover:text-white transition-colors duration-150 max-md:hidden px-1 py-1 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
-            translate="no"
-          >
-            deps.dev
           </Link>
         </div>
 

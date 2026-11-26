@@ -91,7 +91,7 @@ export function SearchBar({ inputRef: externalRef, compact = false }: SearchBarP
   const selectPackage = (pkgName: string) => {
     setIsOpen(false);
     setQuery(pkgName);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     params.set('ecosystem', ecosystem);
     params.set('package', pkgName);
     params.set('type', 'overview');

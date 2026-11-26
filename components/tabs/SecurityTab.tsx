@@ -271,7 +271,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
   return (
     <div className="flex flex-col gap-6 animate-tab-in">
       {/* Top Banner: Status + Version Dropdown Selector */}
-      <div className="bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-6 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+      <div className="relative z-30 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[20px] p-6 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* Status icon and header */}
           <div className="flex items-start sm:items-center gap-4">
@@ -332,7 +332,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
               {/* Dropdown Popover */}
               {isVersionDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] shadow-xl z-50 p-2 flex flex-col gap-2 origin-top-right overscroll-contain">
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#dce7f5] rounded-[16px] shadow-[0_20px_48px_-12px_rgba(3,28,77,0.28)] z-50 p-2 flex flex-col gap-2 origin-top-right overscroll-contain">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748b]" aria-hidden="true" />
                     <input
@@ -445,7 +445,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
       {/* Audited Components Summary Pills */}
       {data && data.auditedComponents && data.auditedComponents.length > 1 && (
-        <div className="p-4 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] text-[12px] flex flex-col gap-2 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+        <div className="relative z-10 p-4 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[16px] text-[12px] flex flex-col gap-2 shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
           <div className="flex items-center justify-between text-[#475569] font-semibold">
             <span className="flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-[#0558d6]" />
@@ -478,7 +478,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
       )}
 
       {/* De-cluttered Control Bar: 2-Segment Switcher + Single Filter Button + Live Search */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/92 backdrop-blur-xl border border-white/90 p-3 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
+      <div className="relative z-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/92 backdrop-blur-xl border border-white/90 p-3 rounded-[16px] shadow-[0_14px_38px_-14px_rgba(3,28,77,0.14)]">
         {/* 2-Segment Switcher with Clearer Wording */}
         <div className="flex items-center gap-1.5 p-1 bg-[#f1f6fd] rounded-[12px] border border-[#dce7f5] shrink-0">
           <button
@@ -546,7 +546,7 @@ export function SecurityTab({ ecosystem, packageName, version: initialVersion, o
 
             {/* Filter Dropdown Popover */}
             {isFilterOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white/92 backdrop-blur-xl border border-white/90 rounded-[18px] shadow-xl z-50 p-3.5 flex flex-col gap-3">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-[#dce7f5] rounded-[18px] shadow-[0_20px_48px_-12px_rgba(3,28,77,0.28)] z-50 p-3.5 flex flex-col gap-3">
                 {/* Severity Selection */}
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b] block mb-2">

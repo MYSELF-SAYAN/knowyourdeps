@@ -60,6 +60,15 @@ export function parsePackageJson(content: string): ParsedManifest {
     'optionalDependencies',
   ];
 
+  const hasAnyDepSection = sections.some(
+    (s) => parsed[s] && typeof parsed[s] === 'object' && !Array.isArray(parsed[s])
+  );
+  if (!hasAnyDepSection) {
+    throw new Error(
+      'No "dependencies", "devDependencies", or "optionalDependencies" object found in package.json.'
+    );
+  }
+
   const seen = new Map<string, ParsedDependency>();
 
   for (const section of sections) {
@@ -111,13 +120,14 @@ export function parseRequirementsTxt(content: string): ParsedManifest {
     const withoutMarkers = noComment.split(';')[0].trim();
     if (!withoutMarkers) continue;
 
-    // Match package name (with optional [extras]) and optional version specifier
+    // Match valid PEP 508 package name (must contain a letter, optional [extras]) and optional PEP 440 version specifiers
     const match = withoutMarkers.match(
-      /^([A-Za-z0-9._-]+)(?:\[[^\]]+\])?\s*(.*)$/
+      /^([A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?)(?:\[[A-Za-z0-9._,-]+\])?(?:\s*((?:===|==|~=|>=|<=|!=|>|<)\s*[0-9][0-9A-Za-z.*_-]*(?:\s*,\s*(?:===|==|~=|>=|<=|!=|>|<)\s*[0-9][0-9A-Za-z.*_-]*)*))?$/
     );
     if (!match) continue;
 
     const name = match[1].trim();
+    if (!/[A-Za-z]/.test(name)) continue;
     const spec = (match[2] || '').trim();
     const key = name.toLowerCase();
     if (!name || seen.has(key)) continue;

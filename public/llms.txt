@@ -1,0 +1,51 @@
+# KnowYourDeps — Package Security & Dependency Intelligence
+
+> Free, open-source security intelligence for npm and PyPI packages.
+> Built for developers who want to understand their dependencies before it's too late.
+
+## What KnowYourDeps does
+
+KnowYourDeps (knowyourdeps.dev) is a developer tool that provides:
+
+- **CVE scanning** — query OSV.dev, NVD, and GitHub Advisories for real CVEs across npm and PyPI packages
+- **Manifest scanner** — upload or paste a `package.json` or `requirements.txt` and get a full vulnerability report with PDF export
+- **Package intelligence** — per-version security status, OpenSSF scorecard, download trends, ecosystem dependency graph
+- **Comparison** — side-by-side security and health metrics for two packages
+- **MCP server** — a Model Context Protocol server that lets AI coding assistants (Claude, Cursor, Windsurf, etc.) call KnowYourDeps tools directly
+
+## Pages
+
+- `/` — Package search and per-package intelligence (Overview, Stats & Metrics, Security, Ecosystem, Health tabs)
+- `/scan` — Manifest CVE scanner (paste, upload, or build a package list interactively)
+- `/docs` — API documentation and MCP server integration guide
+
+## MCP server
+
+KnowYourDeps exposes a full MCP (Model Context Protocol) server.
+AI assistants can call it to:
+- audit `package.json` or `requirements.txt` for CVEs
+- inspect specific package versions for known vulnerabilities
+- compare packages by security health
+- resolve safe upgrade paths
+
+## Data sources
+
+- OSV.dev (Google Open Source Vulnerabilities)
+- NVD (NIST National Vulnerability Database)
+- GitHub Advisory Database
+- npm Registry
+- PyPI
+
+## Intended audience
+
+- Software developers and security engineers
+- AI coding assistants (Claude, GPT, Gemini, Cursor, Windsurf, Copilot)
+- DevSecOps toolchains
+
+## License
+
+Open-source. See repository for details.
+
+## Contact
+
+Built by MYSELF-SAYAN. Source code at https://github.com/MYSELF-SAYAN/knowyourdeps

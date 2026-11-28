@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -10,11 +10,17 @@ import {
   Loader2,
   RotateCcw,
   CheckCircle2,
+  ClipboardPaste,
+  ShieldCheck,
+  X,
+  ListPlus,
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ComparisonModal } from '@/components/ComparisonModal';
 import { ScanResultTable } from '@/components/scan/ScanResultTable';
+import { PackageListBuilder } from '@/components/scan/PackageListBuilder';
+import { KeycapButton } from '@/components/ui/KeycapButton';
 import { parseManifestFile } from '@/lib/manifestParser';
 import { exportScanResultsToPdf } from '@/lib/pdfExport';
 import type { ScanPackageResult } from '@/app/api/scan/route';
@@ -59,8 +65,24 @@ interface ScanResponseState {
   };
 }
 
+type InputMode = 'paste' | 'builder' | 'upload';
+type ManifestFormat = 'auto' | 'package.json' | 'requirements.txt';
+
 function ScanContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tabRefs = useRef<Record<InputMode, HTMLButtonElement | null>>({
+    paste: null,
+    builder: null,
+    upload: null,
+  });
+  const [inputMode, setInputMode] = useState<InputMode>('paste');
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number; ready: boolean }>({
+    left: 0,
+    width: 0,
+    ready: false,
+  });
+  const [manifestFormat, setManifestFormat] = useState<ManifestFormat>('auto');
+  const [pastedText, setPastedText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +94,27 @@ function ScanContent() {
     { ecosystem: 'npm', name: 'axios' },
     { ecosystem: 'npm', name: 'got' },
   ]);
+
+  useLayoutEffect(() => {
+    const updatePill = () => {
+      const el = tabRefs.current[inputMode];
+      if (!el) return;
+      setPillStyle({
+        left: el.offsetLeft,
+        width: el.offsetWidth,
+        ready: true,
+      });
+    };
+    updatePill();
+    window.addEventListener('resize', updatePill);
+    return () => window.removeEventListener('resize', updatePill);
+  }, [inputMode, scanData, scanning]);
+
+  const inferFileName = (content: string, format: ManifestFormat): string => {
+    if (format === 'package.json') return 'package.json';
+    if (format === 'requirements.txt') return 'requirements.txt';
+    return content.trim().startsWith('{') ? 'package.json' : 'requirements.txt';
+  };
 
   const runManifestScan = async (fileName: string, content: string) => {
     setError(null);
@@ -105,7 +148,58 @@ function ScanContent() {
         summary: json.summary,
       });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unable to process this file.';
+      const msg = err instanceof Error ? err.message : 'Unable to process this manifest.';
+      setError(msg);
+      setScanData(null);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const handlePasteSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!pastedText.trim()) {
+      setError('Paste your package.json or requirements.txt contents before scanning.');
+      return;
+    }
+    const targetName = inferFileName(pastedText, manifestFormat);
+    await runManifestScan(targetName, pastedText);
+  };
+
+  const handleLoadAndScanSample = async (fileName: 'package.json' | 'requirements.txt', content: string) => {
+    setPastedText(content);
+    setManifestFormat(fileName);
+    await runManifestScan(fileName, content);
+  };
+
+  const runPackagesScan = async (
+    ecosystem: Ecosystem,
+    packages: Array<{ name: string; version: string }>
+  ) => {
+    setError(null);
+    setPdfNotice(null);
+    setScanning(true);
+
+    try {
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ecosystem, packages }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to scan packages.');
+      }
+
+      setScanData({
+        ecosystem: json.ecosystem,
+        fileName: `${ecosystem}-custom-selection`,
+        results: json.results,
+        summary: json.summary,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unable to scan selected packages.';
       setError(msg);
       setScanData(null);
     } finally {
@@ -197,57 +291,275 @@ function ScanContent() {
             </span>
           </h1>
           <p className="mt-3 text-[15px] sm:text-[16px] text-[#eaf4ff] leading-relaxed">
-            Upload a <code className="font-mono text-[14px] text-white">package.json</code> or{' '}
+            Paste or upload a <code className="font-mono text-[14px] text-white">package.json</code> or{' '}
             <code className="font-mono text-[14px] text-white">requirements.txt</code> to check every dependency for known CVEs and export a PDF report.
           </p>
         </div>
 
         {/* Crisp Frosted Card Shell */}
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl border border-[#cde3fa] shadow-[0_24px_64px_-16px_rgba(3,28,77,0.2)] p-6 sm:p-10 space-y-6">
-          {/* Upload Dropzone */}
+          {/* Input Mode Switcher + Paste / Upload */}
           {!scanData && !scanning && (
             <div className="space-y-5">
-              <label
-                htmlFor="manifest-file-input"
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className={`group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center cursor-pointer transition-all duration-150 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#0558d6] ${
-                  isDragging
-                    ? 'border-[#0558d6] bg-[#eff6ff]'
-                    : 'border-[#bdd6f4] bg-[#f8fbff] hover:border-[#087cf8] hover:bg-[#eff6ff]/60'
-                }`}
-              >
-                <input
-                  ref={fileInputRef}
-                  id="manifest-file-input"
-                  type="file"
-                  accept=".json,.txt,application/json,text/plain"
-                  onChange={handleInputChange}
-                  aria-label="Upload package.json or requirements.txt file"
-                  className="sr-only"
-                />
-                <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-[#eff6ff] border border-[#cde3fa] text-[#0558d6] mb-4 transition-transform duration-150 group-hover:-translate-y-0.5">
-                  <UploadCloud className="h-6 w-6" aria-hidden="true" />
+              {/* Mode Tabs & Format Selector */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-h-[42px]">
+                <div
+                  role="tablist"
+                  aria-label="Manifest input method"
+                  className="relative inline-flex items-center rounded-xl bg-[#f1f6fd] p-1 border border-[#dce7f5] self-start"
+                >
+                  {pillStyle.ready && (
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        transform: `translate3d(${pillStyle.left - 4}px, 0, 0)`,
+                        width: `${pillStyle.width}px`,
+                      }}
+                      className="absolute top-1 bottom-1 left-1 rounded-lg bg-white shadow-xs transition-[transform,width] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] pointer-events-none"
+                    />
+                  )}
+                  <button
+                    ref={(el) => {
+                      tabRefs.current.paste = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    id="tab-paste"
+                    aria-selected={inputMode === 'paste'}
+                    aria-controls="panel-paste"
+                    onClick={() => {
+                      setInputMode('paste');
+                      setError(null);
+                    }}
+                    className={`relative z-10 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] whitespace-nowrap ${
+                      inputMode === 'paste'
+                        ? 'text-[#0f172a] font-semibold'
+                        : 'text-[#475569] hover:text-[#0f172a] font-medium'
+                    }`}
+                  >
+                    <ClipboardPaste className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
+                    <span>Paste Manifest</span>
+                  </button>
+                  <button
+                    ref={(el) => {
+                      tabRefs.current.builder = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    id="tab-builder"
+                    aria-selected={inputMode === 'builder'}
+                    aria-controls="panel-builder"
+                    onClick={() => {
+                      setInputMode('builder');
+                      setError(null);
+                    }}
+                    className={`relative z-10 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] whitespace-nowrap ${
+                      inputMode === 'builder'
+                        ? 'text-[#0f172a] font-semibold'
+                        : 'text-[#475569] hover:text-[#0f172a] font-medium'
+                    }`}
+                  >
+                    <ListPlus className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
+                    <span>Add Packages</span>
+                  </button>
+                  <button
+                    ref={(el) => {
+                      tabRefs.current.upload = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    id="tab-upload"
+                    aria-selected={inputMode === 'upload'}
+                    aria-controls="panel-upload"
+                    onClick={() => {
+                      setInputMode('upload');
+                      setError(null);
+                    }}
+                    className={`relative z-10 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] cursor-pointer transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] whitespace-nowrap ${
+                      inputMode === 'upload'
+                        ? 'text-[#0f172a] font-semibold'
+                        : 'text-[#475569] hover:text-[#0f172a] font-medium'
+                    }`}
+                  >
+                    <UploadCloud className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
+                    <span>Upload File</span>
+                  </button>
                 </div>
-                <p className="font-display text-[17px] font-semibold text-[#0f172a]">
-                  Drop your manifest here, or click to browse
-                </p>
-                <p className="mt-1.5 text-[13.5px] text-[#475569]">
-                  Supports <span className="font-mono text-[#0f172a]">package.json</span> (npm) and{' '}
-                  <span className="font-mono text-[#0f172a]">requirements.txt</span> (PyPI) up to 2 MB
-                </p>
-              </label>
+
+                <div
+                  role="group"
+                  aria-label="Manifest format"
+                  aria-hidden={inputMode !== 'paste'}
+                  className={`inline-flex items-center gap-1 rounded-xl bg-[#f8fbff] p-1 border border-[#dce7f5] self-start sm:self-auto transition-opacity duration-200 ${
+                    inputMode === 'paste'
+                      ? 'opacity-100'
+                      : 'opacity-0 pointer-events-none hidden sm:inline-flex'
+                  }`}
+                >
+                  {(
+                    [
+                      { id: 'auto', label: 'Auto-detect' },
+                      { id: 'package.json', label: 'package.json' },
+                      { id: 'requirements.txt', label: 'requirements.txt' },
+                    ] as Array<{ id: ManifestFormat; label: string }>
+                  ).map((fmt) => {
+                    const active = manifestFormat === fmt.id;
+                    return (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        tabIndex={inputMode === 'paste' ? 0 : -1}
+                        aria-pressed={active}
+                        onClick={() => setManifestFormat(fmt.id)}
+                        className={`px-2.5 py-1 rounded-lg text-[12px] cursor-pointer transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6] ${
+                          fmt.id === 'auto' ? 'font-sans' : 'font-mono'
+                        } ${
+                          active
+                            ? 'bg-[#eff6ff] text-[#0558d6] font-semibold border border-[#bfdbfe]'
+                            : 'text-[#475569] hover:text-[#0f172a] border border-transparent'
+                        }`}
+                      >
+                        {fmt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Steady-height Panel Container (prevents layout shift across tabs) */}
+              <div className="min-h-[360px] flex flex-col">
+              {/* Paste Panel (Default) */}
+              {inputMode === 'paste' ? (
+                <form
+                  key="panel-paste"
+                  id="panel-paste"
+                  role="tabpanel"
+                  aria-labelledby="tab-paste"
+                  onSubmit={handlePasteSubmit}
+                  className="flex-1 flex flex-col justify-between gap-4 animate-in fade-in slide-in-from-bottom-1 duration-200"
+                >
+                  <div className="relative flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label
+                        htmlFor="manifest-paste-input"
+                        className="text-[13px] font-medium text-[#334155]"
+                      >
+                        Manifest contents
+                      </label>
+                      {pastedText && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPastedText('');
+                            setError(null);
+                          }}
+                          className="inline-flex items-center gap-1 text-[12px] text-[#64748b] hover:text-[#0f172a] cursor-pointer rounded px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
+                        >
+                          <X className="h-3 w-3" aria-hidden="true" />
+                          <span>Clear</span>
+                        </button>
+                      )}
+                    </div>
+                    <textarea
+                      id="manifest-paste-input"
+                      value={pastedText}
+                      onChange={(e) => setPastedText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                          e.preventDefault();
+                          handlePasteSubmit();
+                        }
+                      }}
+                      rows={11}
+                      spellCheck={false}
+                      aria-describedby="manifest-paste-hint"
+                      placeholder={`Paste package.json or requirements.txt here...\n\nExample (package.json):\n{\n  "dependencies": {\n    "axios": "0.21.1",\n    "lodash": "4.17.20"\n  }\n}\n\nExample (requirements.txt):\nrequests==2.25.1\npyyaml==5.3.1`}
+                      className="w-full flex-1 rounded-2xl border border-[#bdd6f4] bg-[#f8fbff] p-4 font-mono text-[13px] leading-relaxed text-[#0f172a] placeholder:text-[#94a3b8] focus:bg-white focus:border-[#0558d6] focus:outline-none focus:ring-3 focus:ring-[#0558d6]/15 resize-y min-h-[250px]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <p id="manifest-paste-hint" className="text-[12.5px] text-[#475569]">
+                      Press <kbd className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-[#f1f5f9] border border-[#dce7f5] text-[#334155]">Ctrl</kbd> + <kbd className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-[#f1f5f9] border border-[#dce7f5] text-[#334155]">Enter</kbd> to scan
+                    </p>
+
+                    <KeycapButton
+                      type="submit"
+                      variant="primary"
+                      size="md"
+                      className="gap-2 w-full sm:w-auto"
+                    >
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                      <span>Scan Dependencies</span>
+                    </KeycapButton>
+                  </div>
+                </form>
+              ) : inputMode === 'builder' ? (
+                <div
+                  key="panel-builder"
+                  id="panel-builder"
+                  role="tabpanel"
+                  aria-labelledby="tab-builder"
+                  className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-1 duration-200"
+                >
+                  <PackageListBuilder
+                    onScanPackages={runPackagesScan}
+                    onError={setError}
+                  />
+                </div>
+              ) : (
+                /* Upload Dropzone Panel */
+                <div
+                  key="panel-upload"
+                  id="panel-upload"
+                  role="tabpanel"
+                  aria-labelledby="tab-upload"
+                  className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-1 duration-200"
+                >
+                  <label
+                    htmlFor="manifest-file-input"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`group flex-1 min-h-[320px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center cursor-pointer transition-all duration-150 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#0558d6] ${
+                      isDragging
+                        ? 'border-[#0558d6] bg-[#eff6ff]'
+                        : 'border-[#bdd6f4] bg-[#f8fbff] hover:border-[#087cf8] hover:bg-[#eff6ff]/60'
+                    }`}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      id="manifest-file-input"
+                      type="file"
+                      accept=".json,.txt,application/json,text/plain"
+                      onChange={handleInputChange}
+                      aria-label="Upload package.json or requirements.txt file"
+                      className="sr-only"
+                    />
+                    <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-[#eff6ff] border border-[#cde3fa] text-[#0558d6] mb-4 transition-transform duration-150 group-hover:-translate-y-0.5">
+                      <UploadCloud className="h-6 w-6" aria-hidden="true" />
+                    </div>
+                    <p className="font-display text-[17px] font-semibold text-[#0f172a]">
+                      Drop your manifest here, or click to browse
+                    </p>
+                    <p className="mt-1.5 text-[13.5px] text-[#475569]">
+                      Supports <span className="font-mono text-[#0f172a]">package.json</span> (npm) and{' '}
+                      <span className="font-mono text-[#0f172a]">requirements.txt</span> (PyPI) up to 2 MB
+                    </p>
+                  </label>
+                </div>
+              )}
+              </div>
 
               {/* Quick Sample Triggers */}
-              <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1 text-[12.5px] text-[#475569]">
+              <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2 border-t border-[#eef4fb] text-[12.5px] text-[#475569]">
                 <span>Try a sample:</span>
                 <button
                   type="button"
-                  onClick={() => runManifestScan('package.json', SAMPLE_PACKAGE_JSON)}
+                  onClick={() => handleLoadAndScanSample('package.json', SAMPLE_PACKAGE_JSON)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#dce7f5] bg-white hover:bg-[#eff6ff] hover:border-[#93c5fd] text-[#0f172a] font-mono text-[12px] cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                 >
                   <FileCode2 className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />
@@ -255,7 +567,7 @@ function ScanContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => runManifestScan('requirements.txt', SAMPLE_REQUIREMENTS_TXT)}
+                  onClick={() => handleLoadAndScanSample('requirements.txt', SAMPLE_REQUIREMENTS_TXT)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#dce7f5] bg-white hover:bg-[#eff6ff] hover:border-[#93c5fd] text-[#0f172a] font-mono text-[12px] cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                 >
                   <FileCode2 className="h-3.5 w-3.5 text-[#0558d6]" aria-hidden="true" />

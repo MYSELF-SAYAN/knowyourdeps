@@ -1,0 +1,37 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "knowyourdeps",
+  "owner": {
+    "name": "MYSELF-SAYAN"
+  },
+  "metadata": {
+    "description": "Official KnowYourDeps plugin marketplace for npm and PyPI dependency CVE scanning, transitive tree auditing, and conflict-free upgrade planning.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "knowyourdeps",
+      "source": "./extensions/claude-code",
+      "description": "Audit npm and PyPI dependencies for CVEs, inspect transitive dependency trees, and generate conflict-free upgrade plans via the remote KnowYourDeps MCP server.",
+      "version": "1.0.0",
+      "author": {
+        "name": "MYSELF-SAYAN",
+        "url": "https://github.com/MYSELF-SAYAN"
+      },
+      "homepage": "https://knowyourdeps.dev",
+      "repository": "https://github.com/MYSELF-SAYAN/knowyourdeps",
+      "license": "MIT",
+      "category": "security",
+      "keywords": [
+        "security",
+        "cve",
+        "vulnerabilities",
+        "npm",
+        "pypi",
+        "osv",
+        "dependencies",
+        "mcp"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "knowyourdeps",
+  "version": "1.0.0",
+  "description": "Audit npm and PyPI dependencies for CVEs, inspect transitive dependency trees, and generate conflict-free upgrade plans via the remote KnowYourDeps MCP server.",
+  "author": {
+    "name": "MYSELF-SAYAN",
+    "url": "https://github.com/MYSELF-SAYAN"
+  },
+  "homepage": "https://knowyourdeps.dev",
+  "repository": "https://github.com/MYSELF-SAYAN/knowyourdeps",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "cve",
+    "vulnerabilities",
+    "npm",
+    "pypi",
+    "osv",
+    "dependencies",
+    "mcp"
+  ]
+}

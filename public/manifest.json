@@ -1,0 +1,35 @@
+{
+  "name": "KnowYourDeps",
+  "short_name": "KnowYourDeps",
+  "description": "Free security intelligence for npm and PyPI packages. Scan CVEs, check OpenSSF scores, and inspect transitive dependencies.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f8ff",
+  "theme_color": "#0558d6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["developer", "security", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "KnowYourDeps — Package Security dashboard"
+    }
+  ]
+}

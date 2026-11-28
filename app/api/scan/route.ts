@@ -25,8 +25,9 @@ export interface ScanPackageResult {
   version: string;
   rawSpec?: string;
   section?: string;
-  status: 'safe' | 'vulnerable';
+  status: 'safe' | 'vulnerable' | 'invalid';
   cves: ScanCveItem[];
+  invalidReason?: string;
 }
 
 interface OsvBatchVulnStub {
@@ -101,6 +102,72 @@ async function fetchVulnDetail(osvId: string): Promise<ScanCveItem> {
   }
 }
 
+async function verifyPackageExists(
+  ecosystem: Ecosystem,
+  name: string,
+  version: string
+): Promise<{ valid: boolean; reason?: string }> {
+  const hasConcreteVersion =
+    Boolean(version) && version !== 'unpinned' && version !== 'latest';
+  const cacheKey = `scan:exists:${ecosystem}:${name.toLowerCase()}:${hasConcreteVersion ? version : 'any'}`;
+  const cached = getCached<{ valid: boolean; reason?: string }>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    if (ecosystem === 'npm') {
+      const res = await fetch(
+        `https://registry.npmjs.org/${encodeURIComponent(name)}`,
+        {
+          headers: { Accept: 'application/vnd.npm.install-v1+json' },
+          signal: AbortSignal.timeout(6000),
+        }
+      );
+      if (res.status === 404) {
+        const out = { valid: false, reason: 'Package not found on npm' };
+        setCached(cacheKey, out, 1000 * 60 * 30);
+        return out;
+      }
+      if (!res.ok) {
+        return { valid: true };
+      }
+      if (hasConcreteVersion) {
+        const data = (await res.json()) as { versions?: Record<string, unknown> };
+        if (data.versions && !(version in data.versions)) {
+          const out = { valid: false, reason: `Version ${version} not found on npm` };
+          setCached(cacheKey, out, 1000 * 60 * 30);
+          return out;
+        }
+      }
+      const out = { valid: true };
+      setCached(cacheKey, out, 1000 * 60 * 30);
+      return out;
+    } else {
+      const url = hasConcreteVersion
+        ? `https://pypi.org/pypi/${encodeURIComponent(name)}/${encodeURIComponent(version)}/json`
+        : `https://pypi.org/pypi/${encodeURIComponent(name)}/json`;
+      const res = await fetch(url, {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(6000),
+      });
+      if (res.status === 404) {
+        const out = {
+          valid: false,
+          reason: hasConcreteVersion
+            ? `Package or version ${version} not found on PyPI`
+            : 'Package not found on PyPI',
+        };
+        setCached(cacheKey, out, 1000 * 60 * 30);
+        return out;
+      }
+      const out = { valid: true };
+      setCached(cacheKey, out, 1000 * 60 * 30);
+      return out;
+    }
+  } catch {
+    return { valid: true };
+  }
+}
+
 async function mapWithConcurrency<T, R>(
   items: T[],
   limit: number,
@@ -140,13 +207,32 @@ export async function POST(req: NextRequest) {
 
     const osvEcosystem = ecosystem === 'npm' ? 'npm' : 'PyPI';
 
-    // Query OSV.dev querybatch in chunks of 100
-    const batchResults: Array<{ vulns?: OsvBatchVulnStub[] }> = [];
+    // Verify packages actually exist in npm / PyPI before scanning CVEs
+    const existenceChecks = await mapWithConcurrency(packages, 10, (pkg) =>
+      verifyPackageExists(ecosystem, pkg.name, pkg.version)
+    );
+
+    const validEntries = packages
+      .map((pkg, idx) => ({ pkg, idx, check: existenceChecks[idx] }))
+      .filter((entry) => entry.check.valid);
+
+    if (validEntries.length === 0) {
+      const sample = packages[0]?.name || 'package';
+      return NextResponse.json(
+        {
+          error: `No valid ${ecosystem === 'npm' ? 'npm' : 'PyPI'} dependencies found ("${sample}" does not exist in the registry).`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Query OSV.dev querybatch in chunks of 100 for valid packages only
+    const validBatchMap = new Map<number, { vulns?: OsvBatchVulnStub[] }>();
     const CHUNK_SIZE = 100;
 
-    for (let i = 0; i < packages.length; i += CHUNK_SIZE) {
-      const chunk = packages.slice(i, i + CHUNK_SIZE);
-      const queries = chunk.map((pkg) => {
+    for (let i = 0; i < validEntries.length; i += CHUNK_SIZE) {
+      const chunk = validEntries.slice(i, i + CHUNK_SIZE);
+      const queries = chunk.map(({ pkg }) => {
         const hasConcreteVersion =
           pkg.version && pkg.version !== 'unpinned' && pkg.version !== 'latest';
         return {
@@ -175,13 +261,13 @@ export async function POST(req: NextRequest) {
       const data = (await res.json()) as { results?: Array<{ vulns?: OsvBatchVulnStub[] }> };
       const chunkResults = data.results || [];
       for (let j = 0; j < chunk.length; j++) {
-        batchResults.push(chunkResults[j] || { vulns: [] });
+        validBatchMap.set(chunk[j].idx, chunkResults[j] || { vulns: [] });
       }
     }
 
     // Collect unique OSV IDs to resolve CVE aliases & severities
     const uniqueOsvIds = new Set<string>();
-    for (const r of batchResults) {
+    for (const r of validBatchMap.values()) {
       for (const v of r.vulns || []) {
         if (v.id) uniqueOsvIds.add(v.id);
       }
@@ -197,7 +283,20 @@ export async function POST(req: NextRequest) {
     }
 
     const results: ScanPackageResult[] = packages.map((pkg, idx) => {
-      const stubs = batchResults[idx]?.vulns || [];
+      const check = existenceChecks[idx];
+      if (!check.valid) {
+        return {
+          name: pkg.name,
+          version: pkg.version || 'unpinned',
+          rawSpec: pkg.rawSpec,
+          section: pkg.section,
+          status: 'invalid',
+          cves: [],
+          invalidReason: check.reason || 'Not found in registry',
+        };
+      }
+
+      const stubs = validBatchMap.get(idx)?.vulns || [];
       const seenIds = new Set<string>();
       const cves: ScanCveItem[] = [];
 
@@ -220,14 +319,14 @@ export async function POST(req: NextRequest) {
     });
 
     const vulnerableCount = results.filter((r) => r.status === 'vulnerable').length;
-    const safeCount = results.length - vulnerableCount;
+    const safeCount = results.filter((r) => r.status === 'safe').length;
     const totalCves = results.reduce((acc, r) => acc + r.cves.length, 0);
 
     return NextResponse.json({
       ecosystem,
       results,
       summary: {
-        total: results.length,
+        total: validEntries.length,
         safe: safeCount,
         vulnerable: vulnerableCount,
         totalCves,

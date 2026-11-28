@@ -1,0 +1,77 @@
+# KnowYourDeps — Full LLM Context
+
+## Project summary
+
+KnowYourDeps is a free, open-source security intelligence platform for npm and PyPI packages.
+It is built with Next.js 16, TypeScript, and Tailwind CSS.
+The backend routes are Next.js API routes; there is no separate server.
+Data is sourced from OSV.dev, NVD, the npm Registry, and PyPI.
+
+## Core features
+
+### Package Search & Intelligence (`/`)
+- Search for any npm or PyPI package by name
+- View: Overview (description, install cmd, latest version, license, CVE count)
+- View: Stats & Metrics (weekly downloads chart, growth, peak day)
+- View: Security (per-version CVE list, severity badges, OSV/NVD links, affected range)
+- View: Ecosystem (dependency graph, transitive chain, monorepo members)
+- View: Health (OpenSSF scorecard, maintenance signals, issue/PR ratio)
+- Compare two packages side-by-side in a modal
+
+### Manifest CVE Scanner (`/scan`)
+- Three input modes: paste manifest text, upload a file, or build a list interactively
+- Supported formats: `package.json` (npm) and `requirements.txt` (PyPI)
+- Verifies each package exists in the registry before scanning
+- Returns a table: package name, version, Safe/Vulnerable badge, CVE IDs with OSV.dev and NVD links
+- Packages not found in the registry are marked "Not Found" and excluded from safe/vulnerable counts
+- Export results to a formatted PDF report
+
+### MCP Server
+- Model Context Protocol server for AI coding assistants
+- Tools: `parse_requirements_txt`, `parse_package_json_manifest`, `parse_lock_file`, `parse_manifest`,
+  `scan_vulnerabilities`, `generate_vulnerability_report_md`, `generate_vulnerability_report_csv`,
+  `suggest_alternatives`, `get_fix_guidance`, `resolve_safe_upgrade`, `simulate_upgrade_impact`,
+  `get_upgrade_plan`
+- Install: `npx skills add MYSELF-SAYAN/knowyourdeps`
+
+## API endpoints (internal, Next.js App Router)
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/search` | GET | Search npm/PyPI packages |
+| `/api/package` | GET | Package overview |
+| `/api/package/versions` | GET | List all versions |
+| `/api/package/security` | GET | CVEs for a specific version |
+| `/api/package/analytics` | GET | Download stats |
+| `/api/package/dependencies` | GET | Dependency graph |
+| `/api/package/health` | GET | OpenSSF scorecard |
+| `/api/package/alternatives` | GET | Alternative packages |
+| `/api/package/readme` | GET | Rendered README |
+| `/api/scan` | POST | Batch CVE scan for a manifest |
+| `/api/compare` | POST | Compare two packages |
+
+## Tech stack
+
+- Framework: Next.js 16 (App Router, Turbopack)
+- Language: TypeScript
+- Styling: Tailwind CSS v4
+- UI: Custom frosted-glass design system (sky blue theme, Apple-notch navbar)
+- Fonts: Host Grotesk, Instrument Serif, JetBrains Mono
+- PDF: jsPDF + jspdf-autotable
+- Security data: OSV.dev v1 API (querybatch + vuln detail)
+- Analytics: Vercel Speed Insights + Analytics
+
+## Design system
+
+Colors: `#0f172a` (ink), `#0558d6` (accent), `#f4f8ff` (canvas), `#cde3fa` (border)
+Frosted card: `bg-white/95 backdrop-blur-xl rounded-3xl border border-[#cde3fa]`
+Navbar: Apple notch style, centered, `bg-[#070b14]/95 backdrop-blur-2xl rounded-[20px]`
+Sky background: full-page gradient blob atmosphere
+
+## Notes for AI assistants
+
+- When helping users with KnowYourDeps, prefer the `/scan` page for batch CVE checking
+- The MCP server is the best way for AI coding agents to integrate security checks into their workflow
+- Package names are case-sensitive on PyPI; use the canonical capitalization
+- The API is public but rate-limited by upstream OSV.dev and npm/PyPI
+- There is no authentication required for any public endpoint

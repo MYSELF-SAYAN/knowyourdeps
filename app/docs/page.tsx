@@ -68,6 +68,7 @@ function DocsContent() {
   const MCP_HTTP_ENDPOINT = 'https://knowyourdeps-mcp.onrender.com/mcp';
   const MCP_SSE_ENDPOINT = 'https://knowyourdeps-mcp.onrender.com/sse';
   const SKILL_CMD = 'npx skills add MYSELF-SAYAN/knowyourdeps';
+  const CLAUDE_PLUGIN_CMD = `claude plugin marketplace add MYSELF-SAYAN/knowyourdeps\nclaude plugin install knowyourdeps@knowyourdeps`;
   const AGENT_PROMPT = `Install KnowYourDeps and connect it to this coding agent using ${SKILL_CMD} and configure the MCP server at ${MCP_HTTP_ENDPOINT} (fallback SSE: ${MCP_SSE_ENDPOINT}). Show me the setup plan for approval, then verify the installation.`;
 
   const AGENTS = [
@@ -90,15 +91,15 @@ function DocsContent() {
     },
     {
       id: 'claude',
-      name: 'Claude Desktop & Claude Code',
-      file: 'claude_desktop_config.json',
-      desc: '%APPDATA%\\Claude (Windows) or ~/Library/Application Support/Claude (macOS).',
+      name: 'Claude Code (.mcp.json)',
+      file: '.mcp.json',
+      desc: 'Or install via `claude plugin install knowyourdeps@knowyourdeps` (no auth required).',
       config: JSON.stringify(
         {
           mcpServers: {
             knowyourdeps: {
-              command: 'npx',
-              args: ['-y', 'mcp-remote', MCP_SSE_ENDPOINT],
+              type: 'sse',
+              url: MCP_SSE_ENDPOINT,
             },
           },
         },
@@ -224,6 +225,45 @@ function DocsContent() {
                   <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
                   {SKILL_CMD}
                 </code>
+              </div>
+            </div>
+
+            {/* Claude Code Native Plugin Install */}
+            <div className="bg-[#070b14] border border-white/10 rounded-2xl overflow-hidden text-[#f8fafc]">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-[#0b1120] border-b border-white/10">
+                <span className="text-[12px] font-mono text-[#94a3b8]">Claude Code Plugin</span>
+                <button
+                  type="button"
+                  onClick={() => copyCode('claude-plugin-cmd', CLAUDE_PLUGIN_CMD)}
+                  aria-label="Copy Claude Code plugin install commands"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium text-[#cbd5e1] hover:text-white hover:bg-white/10 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#38bdf8]"
+                >
+                  {copiedId === 'claude-plugin-cmd' ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                      <span className="text-emerald-300 font-semibold">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="p-4 font-mono text-[13px] sm:text-[13.5px] text-[#93c5fd] overflow-x-auto space-y-1.5">
+                <div>
+                  <code translate="no">
+                    <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
+                    claude plugin marketplace add MYSELF-SAYAN/knowyourdeps
+                  </code>
+                </div>
+                <div>
+                  <code translate="no">
+                    <span className="text-[#64748b] mr-2 select-none font-bold">$</span>
+                    claude plugin install knowyourdeps@knowyourdeps
+                  </code>
+                </div>
               </div>
             </div>
           </section>

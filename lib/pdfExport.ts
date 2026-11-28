@@ -60,17 +60,27 @@ export function exportScanResultsToPdf({
 
   // Sort vulnerable first in PDF for immediate triage
   const sorted = [...results].sort((a, b) => {
-    if (a.status !== b.status) return a.status === 'vulnerable' ? -1 : 1;
+    const rank = { vulnerable: 0, invalid: 1, safe: 2 };
+    if (a.status !== b.status) return rank[a.status] - rank[b.status];
     return a.name.localeCompare(b.name);
   });
 
   const rows = sorted.map((pkg) => [
     pkg.name,
     pkg.version,
-    pkg.status === 'safe' ? 'Safe' : 'Vulnerable',
-    pkg.cves.length === 0
+    pkg.status === 'safe' ? 'Safe' : pkg.status === 'invalid' ? 'Not Found' : 'Vulnerable',
+    pkg.status === 'invalid'
+      ? pkg.invalidReason || 'Package not found in registry'
+      : pkg.cves.length === 0
       ? 'No known CVEs'
-      : pkg.cves.map((c) => `${c.id} (${c.severity})`).join(', '),
+      : pkg.cves
+          .map((c) => {
+            const nvd = c.id.startsWith('CVE-')
+              ? ` | https://nvd.nist.gov/vuln/detail/${encodeURIComponent(c.id)}`
+              : '';
+            return `${c.id} (${c.severity}) — ${c.url}${nvd}`;
+          })
+          .join('\n'),
   ]);
 
   autoTable(doc, {
@@ -107,6 +117,9 @@ export function exportScanResultsToPdf({
         const val = String(data.cell.raw || '');
         if (val === 'Safe') {
           data.cell.styles.textColor = [13, 122, 66];
+          data.cell.styles.fontStyle = 'bold';
+        } else if (val === 'Not Found') {
+          data.cell.styles.textColor = [146, 64, 14];
           data.cell.styles.fontStyle = 'bold';
         } else {
           data.cell.styles.textColor = [184, 36, 41];

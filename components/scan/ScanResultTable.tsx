@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   ShieldCheck,
   ShieldAlert,
+  AlertTriangle,
   ExternalLink,
   Search,
   Download,
@@ -56,7 +57,8 @@ export function ScanResultTable({
         return matchesPkg || matchesCve;
       })
       .sort((a, b) => {
-        if (a.status !== b.status) return a.status === 'vulnerable' ? -1 : 1;
+        const rank = { vulnerable: 0, invalid: 1, safe: 2 };
+        if (a.status !== b.status) return rank[a.status] - rank[b.status];
         return a.name.localeCompare(b.name);
       });
   }, [results, statusFilter, query]);
@@ -203,7 +205,16 @@ export function ScanResultTable({
                   </td>
                 </tr>
               ) : (
-                filteredResults.map((pkg) => (
+                filteredResults.map((pkg) => {
+                  const hasConcreteVersion =
+                    Boolean(pkg.version) &&
+                    pkg.version !== 'unpinned' &&
+                    pkg.version !== 'latest';
+                  const packageHref = `/?ecosystem=${ecosystem}&package=${encodeURIComponent(pkg.name)}${
+                    hasConcreteVersion ? `&version=${encodeURIComponent(pkg.version)}` : ''
+                  }&type=overview`;
+
+                  return (
                   <tr
                     key={`${pkg.name}-${pkg.version}`}
                     className="transition-colors duration-100 hover:bg-[#f8fbff]/80"
@@ -211,7 +222,8 @@ export function ScanResultTable({
                     <td className="py-3.5 px-4 sm:px-5 align-top">
                       <div className="flex flex-wrap items-center gap-2">
                         <Link
-                          href={`/?ecosystem=${ecosystem}&package=${encodeURIComponent(pkg.name)}&type=security`}
+                          href={packageHref}
+                          aria-label={`Inspect ${pkg.name}${hasConcreteVersion ? ` version ${pkg.version}` : ''} in search`}
                           className="font-semibold text-[#0f172a] hover:text-[#0558d6] transition-colors inline-flex items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0558d6]"
                         >
                           <span>{pkg.name}</span>
@@ -237,6 +249,11 @@ export function ScanResultTable({
                           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>Safe</span>
                         </Badge>
+                      ) : pkg.status === 'invalid' ? (
+                        <Badge variant="warning" size="sm">
+                          <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>Not Found</span>
+                        </Badge>
                       ) : (
                         <Badge variant="vulnerable" size="sm">
                           <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
@@ -246,30 +263,53 @@ export function ScanResultTable({
                     </td>
 
                     <td className="py-3.5 px-4 sm:px-5 align-top">
-                      {pkg.cves.length === 0 ? (
+                      {pkg.status === 'invalid' ? (
+                        <span className="text-[12.5px] text-[#92400e]">
+                          {pkg.invalidReason || 'Package not found in registry (skipped)'}
+                        </span>
+                      ) : pkg.cves.length === 0 ? (
                         <span className="text-[12.5px] text-[#64748b]">No known CVEs</span>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {pkg.cves.map((cve) => (
-                            <a
-                              key={cve.id}
-                              href={cve.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              title={cve.summary}
-                              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#fcccd1] bg-[#fff5f6] hover:bg-[#feecee] text-[11.5px] font-mono font-medium text-[#b82429] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b82429]"
+                            <div
+                              key={`${cve.osvId}-${cve.id}`}
+                              className="inline-flex items-center rounded-md border border-[#fcccd1] bg-[#fff5f6] overflow-hidden"
                             >
-                              <span>{cve.id}</span>
-                              <span className="text-[10px] font-sans font-semibold uppercase opacity-80">
-                                {cve.severity}
-                              </span>
-                            </a>
+                              <a
+                                href={cve.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`${cve.summary} — Verify on OSV.dev`}
+                                aria-label={`Verify ${cve.id} (${cve.severity}) on OSV.dev`}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 hover:bg-[#feecee] text-[11.5px] font-mono font-medium text-[#b82429] transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#b82429]"
+                              >
+                                <span>{cve.id}</span>
+                                <span className="text-[10px] font-sans font-semibold uppercase opacity-80">
+                                  {cve.severity}
+                                </span>
+                                <ExternalLink className="h-2.5 w-2.5 opacity-70" aria-hidden="true" />
+                              </a>
+                              {cve.id.startsWith('CVE-') && (
+                                <a
+                                  href={`https://nvd.nist.gov/vuln/detail/${encodeURIComponent(cve.id)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={`Verify ${cve.id} on NVD`}
+                                  aria-label={`Verify ${cve.id} on NVD`}
+                                  className="px-1.5 py-0.5 border-l border-[#fcccd1] bg-[#feecee]/60 hover:bg-[#feecee] text-[10px] font-sans font-semibold text-[#991b1b] transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#b82429]"
+                                >
+                                  NVD
+                                </a>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

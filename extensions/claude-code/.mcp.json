@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "knowyourdeps": {
+      "type": "sse",
+      "url": "https://knowyourdeps-mcp.onrender.com/sse"
+    }
+  }
+}
